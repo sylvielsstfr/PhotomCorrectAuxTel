@@ -12,3 +12,5 @@ Tools show how to do something
 ## Read the LSST throughput
 
 Official throughput to use for the internship
+
+- **PlotSimpleLSSTFilters.ipynb** : very simple system transmission profile
