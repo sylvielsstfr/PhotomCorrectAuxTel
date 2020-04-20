@@ -20,6 +20,7 @@ WLMIN=300.
 WLMAX=1100.
 
 liblsstfilter_path = os.path.dirname(__file__)
+print("liblsstfilter_path=",liblsstfilter_path)
 
 
 #WLMIN=300. # Minimum wavelength : PySynPhot works with Angstrom
@@ -167,7 +168,7 @@ def PlotAllLSSTBands(bp_u,bp_g,bp_r,bp_i,bp_z,bp_y4):
 
 #---------------------------------------------------------------------------------
 if __name__ == "__main__":
-    print 'hello'
+    print('hello libLSSTFiltersKG')
     
     wl_u,u,wl_g,g,wl_r,r,wl_i,i,wl_z,z,wl_y4,y4=GetFiltersTransmissions('..')
     PlotFiltersTransmissions(wl_u,u,wl_g,g,wl_r,r,wl_i,i,wl_z,z,wl_y4,y4)
