@@ -13,6 +13,8 @@ Tools show how to do something
 
 - **ViewAllAtmosphere.ipynb** : read all files (365x10) simulations
 
+- **ViewAverageAtmosphere.ipynb** : View the average atmospheric profile and upper and lower limit
+
 
 ## Read the LSST throughput
 
@@ -23,4 +25,4 @@ Official throughput to use for the internship
 - **FiltersWithPySynPhot.py** : Use pysynphot to combine system and atmospheric throughput and view the observation.
 
 ## Play with Magnitudes units
- - **MyVegaCalib.ipynb**
+ - **MyVegaCalib.ipynb** use pysynphot to play with magnitudes, counts,....
