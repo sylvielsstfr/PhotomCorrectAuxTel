@@ -71,6 +71,7 @@ def PlotFiltersTransmissions(wl_u,u,wl_g,g,wl_r,r,wl_i,i,wl_z,z,wl_y4,y4):
     plt.title("Ideal Filters LSST",weight='bold')
     plt.xlabel("wavelength (nm)",weight='bold')
     plt.ylabel("transmission",weight='bold')
+    plt.show()
 #---------------------------------------------------------------------------------
 
 
@@ -98,6 +99,7 @@ def PlotThroughputAndCCDQE(wl,throughput,ccdqe,trans_opt_elec):
     plt.xlabel("wavelength",weight='bold')
     plt.ylabel("transmission",weight='bold')
     plt.legend()
+    plt.show()
 #---------------------------------------------------------------------------------
 
 def GetAllLSSTTransmissions(path):
@@ -127,6 +129,7 @@ def PlotAllLSSTTransmissions(wl_u,tot_u,wl_g,tot_g,wl_r,tot_r,wl_i,tot_i,wl_z,to
     plt.xlabel("wavelength (nm)",weight='bold')
     plt.ylabel("transmission",weight='bold')
     plt.savefig("lsst-total-transm.png")
+    plt.show()
 #----------------------------------------------------------------------------------------------
 
 def GetAllLSSTBands(path):
@@ -165,6 +168,7 @@ def PlotAllLSSTBands(bp_u,bp_g,bp_r,bp_i,bp_z,bp_y4):
     plt.xlabel(bp_u.waveunits,weight='bold')
     plt.ylabel('throughput',weight='bold')
     plt.legend([bp_u.name, bp_g.name,bp_r.name, bp_i.name,bp_z.name, bp_y4.name], loc=1,fontsize=9)
+    plt.show()
 
 #---------------------------------------------------------------------------------
 if __name__ == "__main__":
