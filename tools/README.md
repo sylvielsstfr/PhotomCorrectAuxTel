@@ -21,3 +21,6 @@ Official throughput to use for the internship
 - **PlotSimpleLSSTFilters.ipynb** : very simple system transmission profile
 
 - **FiltersWithPySynPhot.py** : Use pysynphot to combine system and atmospheric throughput and view the observation.
+
+## Play with Magnitudes units
+ - **MyVegaCalib.ipynb**
