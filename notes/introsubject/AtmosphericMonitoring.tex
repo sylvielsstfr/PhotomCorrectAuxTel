@@ -113,7 +113,9 @@ where $g$ is the electronic conversion of the number of photoelectrons per ADU c
 Le us defines the effective normalised passband $\Phi^{obs}(\lambda,t)$~:
 
 \begin{equation}
+\boxed{
 \Phi^{obs}_b(\lambda,t) = \frac{T_{atm}(\lambda,az,alt,t)\cdot S^{syst}_b(\lambda,t,x,y) \cdot \frac{1}{\lambda}}{\int_b T_{atm}(\lambda,az,alt,t)\cdot S^{syst}_b(\lambda,t,x,y) \frac{d\lambda}{\lambda}}
+}
 \end{equation}
 Note above the $(x,y)$ pixel variation should have been corrected.
 Then
@@ -163,15 +165,19 @@ m^{nat}_b = \Delta m^{obs}_b + m^{std}_b
 
 where the ratio
 \begin{equation}
+\boxed{
 \Delta m^{obs}_b  = -2.5 \log_{10}\left( \frac{\int F_\nu(\lambda) \Phi^{obs}_b(\lambda,t) d\lambda}{\int F_\nu(\lambda) \Phi^{std}_b(\lambda) d\lambda}\right) 
+}
 \end{equation}
 which depends on the wavelength dependence of $F_\nu(\lambda)$ is a calibration factor.
 
 $m^{std}_b$ is the magnitude to be quoted in the catalog in addition to $ \Phi^{std}_b(\lambda)$. Then magnitudes between experiment can be compared and even translated in another magnitude unit.
 
-In general, a standard calibration procedure consists in giving f the standardized magnitude or measured objects:
+In general, a standard calibration procedure consists in giving the standardized magnitude or measured objects:
 \begin{equation}
+\boxed{
 m^{std}_b = -2.5 \log_{10} (C_b(alt,az,t)) - \Delta m^{obs}_b + Z_b(t)
+}
 \end{equation}
 
 where:
@@ -182,6 +188,14 @@ where:
 \end{itemize}
 
 $Z_b$ in addition to the time varying grey attenuation, the zero point includes constants related to the definition of the reference system, here the $AB$ source reference. 
+
+
+\begin{equation}
+\boxed{
+Z_b^{obs}(t) = 2.5 \log_{10}\left( C F_{AB} \int_0^\infty S^{atm}(\lambda,alt,az,t) S^{syst}_b(\lambda,x,y,t) \frac{d\lambda}{\lambda}\right)
+}
+\end{equation}
+
 
 \section{Method}
 
@@ -369,7 +383,7 @@ The SED for an ideal perfect AB source is,
 & = & 9972~phot/s/nm/cm^2 \left( \frac{550 nm}{\lambda_{nm}} \right)
 \end{eqnarray}
 
-It has an $1/lambda$ photon distribution.
+It has an $1/\lambda$ photon distribution.
 
 
 
