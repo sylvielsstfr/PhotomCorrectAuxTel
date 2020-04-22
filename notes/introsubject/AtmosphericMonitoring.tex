@@ -85,6 +85,8 @@
 %\newpage
 %\tableofcontents                  %% produire à cet endroit la table des matièree				
 
+\abstract{The two point of view ,one in the introduction, the other in the proposition are certainly equivalents. Need to think more ....}
+
 \section{Introduction}	
 
 The usual approach in photometric calibration in a filter band $b$ is presented in this section.
@@ -114,13 +116,13 @@ Le us defines the effective normalised passband $\Phi^{obs}(\lambda,t)$~:
 
 \begin{equation}
 \boxed{
-\Phi^{obs}_b(\lambda,t) = \frac{T_{atm}(\lambda,az,alt,t)\cdot S^{syst}_b(\lambda,t,x,y) \cdot \frac{1}{\lambda}}{\int_b T_{atm}(\lambda,az,alt,t)\cdot S^{syst}_b(\lambda,t,x,y) \frac{d\lambda}{\lambda}}
+\Phi^{obs}_b(\lambda,t) = \frac{T_{atm}(\lambda,az,alt,t)\cdot S^{syst}_b(\lambda,t,x,y) \cdot \frac{1}{\lambda}}{\int T_{atm}(\lambda,az,alt,t)\cdot S^{syst}_b(\lambda,t,x,y) \frac{d\lambda}{\lambda}}
 }
 \end{equation}
 Note above the $(x,y)$ pixel variation should have been corrected.
 Then
 \begin{equation}
-\int_b \Phi^{obs}_b(\lambda,t) d\lambda =1
+\int \Phi^{obs}_b(\lambda,t) d\lambda =1
 \end{equation}
 
 Note any grey attenuation component in the atmospheric transmission is removed in the definition of $\Phi^{obs}_b(\lambda,t)$.
@@ -192,68 +194,82 @@ $Z_b$ in addition to the time varying grey attenuation, the zero point includes 
 
 \begin{equation}
 \boxed{
-Z_b^{obs}(t) = 2.5 \log_{10}\left( C F_{AB} \int_0^\infty S^{atm}(\lambda,alt,az,t) S^{syst}_b(\lambda,x,y,t) \frac{d\lambda}{\lambda}\right)
+Z_b^{obs}(t) = 2.5 \log_{10}\left( C F_{AB} \int_0^\infty T^{atm}(\lambda,alt,az,t) S^{syst}_b(\lambda,x,y,t) \frac{d\lambda}{\lambda}\right)
 }
 \end{equation}
 
+It is obvious the following term
+\begin{equation}
+\int_0^{\infty} T^{atm}(\lambda,alt,az,t)S_b^{syst}(\lambda,x,y,t) \frac{d\lambda}{\lambda}
+\end{equation}
+does not depend on the source SED, but only on the atmosphere-telescope transmission which varies
+for each observation. Namely it evolves with the atmosphere-telescope transmission wavelength integrated over the filter wavelength band but also it comprises the
+the grey wavelength attenuation factor.
 
-\section{Method}
+In addition, the $C$ term may not be well known at expected magnitude accuracy.
+
+
+\section{Proposed Method}
 
 In the following method, we develop at first order the wavelength dependence of the SED and also the atmospheric transmission wavelength dependence.
 
 Let us define for some reference time $t_0$~:
 
 \begin{itemize}
-\item ${\cal F}_S(\lambda, t_0) \simeq {\cal F}_S(\lambda)$ the Spectral Energy Distribution (SED) of some reference star supposed to be steady in Luminosity (in units of photons or photoelectrons per wavelength unit),
+\item $F_\nu^S(\lambda, t) \simeq F_\nu^S(\lambda)$ the Spectral Energy Distribution (SED) of some reference star supposed to be steady in Luminosity (in unit of energy per Hz, per second, per unit surface),
 
-\item $T(\lambda,\hat{z},t_0)$ the atmospheric transmission at airmass $\hat{z}$ corresponding at Auxtel pointing at time $t_0$, which is the quantity we want to monitor,
+\item $T^{atm}(\lambda,z,t_0)$ the atmospheric transmission at airmass $z$ corresponding at LSST and Auxtel pointing at time $t_0$, which is the quantity we want to monitor,
 
-\item $I_V(\lambda,t_0)$, the total instrumental transmission supposed to be constant or corrected such~:
+\item $S_b^{syst}(\lambda,t_0)$, the total instrumental transmission supposed to be constant or corrected such~:
 \begin{equation}
-I_V(\lambda,t_0) = V(\lambda,t_0) \cdot \epsilon_{CCD}(\lambda,t_0) \cdot  O(\lambda,t_0)
+S_b^{syst}(\lambda,t_0) = T_b^F(\lambda,t_0) \cdot \epsilon_{CCD}(\lambda,t_0) \cdot  O(\lambda,t_0)
 \end{equation} 
-where $ V(\lambda,t_0)$ is the filter passband (ex. the LSST Filter band : V= U,G,R,I,Z,Y), $\epsilon_{CCD}(\lambda,t_0) $ is the quantum efficiency, $O(\lambda,t_0)$ is the optical throughput. 
+where $ T_b^F(\lambda,t_0)$ is the filter passband (ex. the LSST Filter band : V= U,G,R,I,Z,Y), $\epsilon_{CCD}(\lambda,t_0) $ is the quantum efficiency of the CCD, $O(\lambda,t_0)$ is the telescope optical throughput (mirror, lens, disperser). 
 \end{itemize}
 
 We define the varying function~:
 \begin{equation}
-{\cal \tau} (\lambda,t) = T(\lambda,\hat{z},t) \cdot I_V(\lambda,t)
+{\cal \tau}_b (\lambda,t) = T^{atm}(\lambda,z,t) \cdot S^{syst}_b(\lambda,t)
 \end{equation}
 
 
-The reference spectrum $S_V(t_0)$ measured in the telescope at reference time $t_0$ is~:
+The reference spectrum $S_b(t_0)$ measured in the telescope at reference time $t_0$ is~:
 
 \begin{equation}
-S_V(t_0) = A \int_V {\cal F}_S(\lambda, t_0) T(\lambda,\hat{z},t_0)  I_V(\lambda,t_0) d\lambda
+S_b^S(t_0) = A \int  F^S_\nu(\lambda, t_0) T^{atm}(\lambda,z,t_0) S^{syst}_b(\lambda,t_0) \frac{d\lambda}{\lambda}
 \end{equation}
-where $A$ is an known constant.
+where $A$ is an constant to be measured by calibration.
 
-We can rewrite the measured spectrum $S_V(t)$ at any time $t$ in a more compact form~:
+We can rewrite the measured spectrum $S_b(t)$ at any time $t$ in a more compact form~:
 \begin{equation}
-S_V(t) = A \int_V {\cal F}_S(\lambda){\cal \tau}(\lambda, t)d\lambda
+S_b^S(t) = A \int F_\nu^S(\lambda){\cal \tau}_b(\lambda, t)d\lambda
 \label{eq:refspectrum}
 \end{equation} 
 
 We assume an ideal AB source which spectrum is fully defined  
-${\cal F}_{AB}$.
+$F_\nu^{S}(\lambda) \equiv F_\nu^{AB}$.
 
 For that particular ideal source, let us define the following ratio~:
 
 \begin{equation}
-k(t) = \frac{\int{\cal \tau}(\lambda,t ) {\cal F}_{AB}d \lambda }{\int{\cal \tau}(\lambda,t_0) {\cal F}_{AB}d \lambda}
+{\cal K}_b(t) = \frac{\int{\cal \tau}_b(\lambda,t ) F_\nu^{AB} \frac{d \lambda}{\lambda}}{\int{\cal \tau}_b(\lambda,t_0) F_\nu^{AB} \frac{d \lambda}{\lambda}} = \frac{\int{\cal \tau}_b(\lambda,t ) \frac{d \lambda}{\lambda}}{\int{\cal \tau}_b(\lambda,t_0) \frac{d \lambda}{\lambda}} 
 \end{equation}
 
 
-$k(t)$ encapsulate time dependence of grey attenuation.
-Let us assume this $k(t)$ to be fully estimated.
+${\cal K}_b(t)$ encapsulates mostly time dependence of grey attenuation.
+Let us assume at first order 
+\begin{equation}
+{\cal K}_b(t) = {\cal K}(t) + \left(\frac{d{\cal K}}{d\lambda}\right)_b (\lambda-\overline{\lambda}_b)
+\end{equation}
+
 
 
 Let us defines the grey attenuation corrected quantities~:
 \begin{equation}
 \left\{
 \begin{array}{ccc}
-S^\prime_V(t) & = & \frac{S_V(t)}{k(t)} \\
-{\cal \tau}^\prime(\lambda, t) & = & \frac{{\cal \tau}(\lambda,t)}{k(t)} \\
+S^\prime_b(t) & = & \frac{S_b(t)}{{\cal K}(t)} \\
+{\cal \tau}_b^\prime(\lambda, t) & = & \frac{{\cal \tau}_b(\lambda,t)}{{\cal K}(t)} \\
 \end{array}
 \right.
 \end{equation}
@@ -264,26 +280,28 @@ the equation~\ref{eq:refspectrum} is well established at time $t_0$.
 
 
 \begin{equation}
-\frac{S_V^\prime(t) - S_V(t_0)}{S_V(t_0)} =  \frac{A}{S_V(t_0)} 
-\int_V \left( {\cal \tau}^\prime(\lambda, t) - {\cal \tau}(\lambda, t_0) \right) {\cal F}_S(\lambda) d\lambda 
+\frac{S_b^{\prime S}(t) - S_b^S(t_0)}{S_b^S(t_0)} =  \frac{A}{S_b(t_0)} 
+\int \left( {\cal \tau}_b^\prime(\lambda, t) - {\cal \tau}_b(\lambda, t_0) \right) F_\nu^S(\lambda) \frac{d\lambda}{\lambda} 
 \end{equation}
  
 
-Because we know quite well the flux of the reference star in the V band, we assume we can approximate  ${\cal F}_S(\lambda)$ at first order in the band $V$ with $\lambda_V$ is the V-band center as follow:
+Because we know quite well the flux of the reference star in the V band, we assume we can approximate  $F_\nu^S(\lambda)$ at first order in the band $b$ with $\overline{\lambda}_b$ is the $b$-band center as follow:
 
 
 \begin{equation}
-{\cal F}_S(\lambda)|_V = {\cal F}_{AB}(\lambda_V) \left(1+ \alpha_S(\lambda - \lambda_V)\right)
+F_\nu^S(\lambda)|_b = F_\nu^{ab}(\overline{\lambda}_b) \left(1+ \alpha^S_b(\lambda - \overline{\lambda}_b)\right)
 \end{equation}
 
+where $F_\nu^{ab}(\overline{\lambda}_b)$ is the source flux at the wavelength center of the filter wavelength range expressed in AB flux units.  
+
 \begin{equation}
-\frac{S_V^\prime(t) - S_V(t_0)}{S_V(t_0)} =  \frac{A}{S_V(t_0)} \int_V \left( {\cal \tau}^\prime(\lambda, t) - {\cal \tau}(\lambda, t_0) \right) {\cal F}_{AB}(\lambda_V) \left(1+ \alpha_S(\lambda - \lambda_V)\right) d\lambda
+\frac{S_b^{\prime S} (t) - S_b^S(t_0)}{S_b^S(t_0)} =  \frac{A}{S_b(t_0)} \int \left( {\cal \tau}_b^\prime(\lambda, t) - {\cal \tau}_b(\lambda, t_0) \right) F_nu^{ab}(\overline{\lambda}_b) \left(1+ \alpha_b^S(\lambda - \overline{\lambda}_b)\right) \frac{d\lambda}{\lambda}
 \end{equation}
 
 
 We make a second assumption\footnote{I don't understand this approximation is true.} :
 \begin{equation}
-{\cal \tau}^\prime(\lambda, t) - {\cal \tau}(\lambda, t_0)  = {\cal \tau}(\lambda, t_0)\left(\frac{1}{k(t)}\frac{{\cal \tau}(\lambda,t) }{{\cal \tau}(\lambda,t_0)} -1 \right) \simeq {\cal \tau}(\lambda, t_0) a(t) (\lambda-\lambda_V)
+{\cal \tau}_b^\prime(\lambda, t) - {\cal \tau}_b(\lambda, t_0)  = {\cal \tau}_b(\lambda, t_0)\left(\frac{1}{{\cal K}(t)}\frac{{\cal \tau}_b(\lambda,t) }{{\cal \tau}_b(\lambda,t_0)} -1 \right) \simeq {\cal \tau}_b(\lambda, t_0) a(t) (\lambda-\overline{\lambda}_b)
 \end{equation}
 
 
@@ -298,24 +316,25 @@ We make a second assumption\footnote{I don't understand this approximation is tr
 
 
 
-The Magnitude variation of the source S in the V band is:
+The magnitude variation of the source $S$ in the b band is:
 \begin{equation}
-dM^S_{V_{AB}} = -\frac{2.5}{\ln(10)} \frac{dF^S_{V_{AB}}}{F_{V_{AB}}}
+\Delta M^S_b(t) = -\frac{2.5}{\ln(10)} \frac{S_b^{\prime S}(t) - S_b^S(t_0)}{S_b^S(t_0)} 
 \end{equation}
 
 Then 
 \begin{equation}
--\frac{\ln(10)}{2.5} \left(M^S_{V_{AB}}(t)- M^S_{V_{AB}}(t_0) \right) \simeq
-\frac{A {\cal F}_{AB}(\lambda_V)  {\cal \tau}(\lambda, t_0) }{S_V(t_0)}a(t)\int_{\lambda_V-\Delta \lambda/2}^{\lambda_V+\Delta \lambda/2}(\lambda- \lambda_V)\left(1+ \alpha_S(\lambda - \lambda_V)\right) d\lambda
+-\frac{\ln(10)}{2.5} \left(M^S_b(t)- M^S_b(t_0) \right) \simeq
+\frac{A F_\nu^{ab}(\overline{\lambda}_b)  {\cal \tau}_b(\lambda, t_0) }{S^S_b(t_0)}a(t)\int_{\overline{\lambda}_b-\Delta \lambda/2}^{\overline{\lambda}_b+\Delta \lambda/2}(\lambda- \overline{\lambda}_b)\left(1+ \alpha_b^S(\lambda - \overline{\lambda}_b)\right) \frac{d\lambda}{\lambda}
 \end{equation}
 
 We defines $\Delta \lambda$:
 \begin{equation}
-\Delta \lambda = \frac{S_V(t_0)}{A {\cal F}_{AB}(\lambda_V)  {\cal \tau}(\lambda, t_0)} 
+\Delta \lambda = \frac{S_b^S(t_0)}{A F_\nu^{ab}(\overline{\lambda}_b)  {\cal \tau}_b(\lambda, t_0)} 
 \end{equation}
 
+To be corrected ....
 \begin{equation}
-0.921 \left(M^S_{V_{AB}}(t)- M^S_{V_{AB}}(t_0) \right) = \frac{a(t) \alpha_S}{12}(\Delta \lambda)^2
+0.921 \left(M^S_b(t)- M^S_b(t_0) \right) = \frac{a(t) \alpha^S_b}{12}(\Delta \lambda)^2
 \end{equation}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -392,7 +411,7 @@ It has an $1/\lambda$ photon distribution.
 \subsection{Power law}
 Let us assume in a band $V$ width the Flux of a star  ${\cal F}_S(\lambda)$ can be approximated at first order by a power law if index $\alpha_S$ as follow~:
 \begin{equation}
-{\cal F}_S(\lambda) \simeq {\cal F}_S(\lambda_V) (\lambda-\lambda_V)^{\alpha_S}
+{\cal F}_S(\lambda) \simeq {\cal F}_S(\lambda_V) \left( \frac{\lambda}{\overline{\lambda}_b} \right))^{\alpha_S}
 \end{equation}
 
 This expression can be developed as follow~:
@@ -453,7 +472,7 @@ R(\lambda,t)& = &\frac{T(\lambda,t,z)}{T(\lambda,t_0,z)}-1 = \exp\left\{-\left(K
 \\ &  \simeq & \left(K(\lambda,t)- K(\lambda,t_0) \right)z
 \end{eqnarray}
 
-In a band $V$, $K(\lambda,t)$ can be expressed at first order as~:
+In a band $b$, $K(\lambda,t)$ can be expressed at first order as~:
 
 \begin{equation}
 K(\lambda,t) = K(\lambda_V,t) + \frac{\partial K}{\partial \lambda}_{\lambda=\lambda_V}(\lambda-\lambda_V)
