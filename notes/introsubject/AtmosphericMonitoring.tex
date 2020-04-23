@@ -216,7 +216,7 @@ In the following method, we develop at first order the wavelength dependence of 
 Let us define for some reference time $t_0$~:
 
 \begin{itemize}
-\item $F_\nu^S(\lambda, t) \simeq F_\nu^S(\lambda)$ the Spectral Energy Distribution (SED) of some reference star supposed to be steady in Luminosity (in unit of energy per Hz, per second, per unit surface),
+\item $F_\nu^S(\lambda, t) \simeq F_\nu^S(\lambda)$ the Spectral Energy Distribution (SED) of some reference star supposed to be steady in Luminosity (in unit of energy per Hz, per second, per unit surface)\footnote{Remember $F_\nu^S(\lambda)d\nu = F_\lambda^S(\lambda)d\lambda$, then $F_\nu^S(\lambda)= -\frac{\lambda^2}{hc}F_\lambda^S(\lambda)$.},
 
 \item $T^{atm}(\lambda,z,t_0)$ the atmospheric transmission at airmass $z$ corresponding at LSST and Auxtel pointing at time $t_0$, which is the quantity we want to monitor,
 
@@ -242,7 +242,7 @@ where $A$ is an constant to be measured by calibration.
 
 We can rewrite the measured spectrum $S_b(t)$ at any time $t$ in a more compact form~:
 \begin{equation}
-S_b^S(t) = A \int F_\nu^S(\lambda){\cal \tau}_b(\lambda, t)d\lambda
+S_b^S(t) = A \int F_\nu^S(\lambda){\cal \tau}_b(\lambda, t)\frac{d\lambda}{\lambda}
 \label{eq:refspectrum}
 \end{equation} 
 
@@ -295,7 +295,7 @@ F_\nu^S(\lambda)|_b = F_\nu^{ab}(\overline{\lambda}_b) \left(1+ \alpha^S_b(\lamb
 where $F_\nu^{ab}(\overline{\lambda}_b)$ is the source flux at the wavelength center of the filter wavelength range expressed in AB flux units.  
 
 \begin{equation}
-\frac{S_b^{\prime S} (t) - S_b^S(t_0)}{S_b^S(t_0)} =  \frac{A}{S_b(t_0)} \int \left( {\cal \tau}_b^\prime(\lambda, t) - {\cal \tau}_b(\lambda, t_0) \right) F_nu^{ab}(\overline{\lambda}_b) \left(1+ \alpha_b^S(\lambda - \overline{\lambda}_b)\right) \frac{d\lambda}{\lambda}
+\frac{S_b^{\prime S} (t) - S_b^S(t_0)}{S_b^S(t_0)} =  \frac{A}{S_b(t_0)} \int \left( {\cal \tau}_b^\prime(\lambda, t) - {\cal \tau}_b(\lambda, t_0) \right) F_\nu^{ab}(\overline{\lambda}_b) \left(1+ \alpha_b^S(\lambda - \overline{\lambda}_b)\right) \frac{d\lambda}{\lambda}
 \end{equation}
 
 
@@ -332,9 +332,9 @@ We defines $\Delta \lambda$:
 \Delta \lambda = \frac{S_b^S(t_0)}{A F_\nu^{ab}(\overline{\lambda}_b)  {\cal \tau}_b(\lambda, t_0)} 
 \end{equation}
 
-To be corrected ....
+To be checked
 \begin{equation}
-0.921 \left(M^S_b(t)- M^S_b(t_0) \right) = \frac{a(t) \alpha^S_b}{12}(\Delta \lambda)^2
+0.921 \left(M^S_b(t)- M^S_b(t_0) \right) = \frac{a(t) \overline{\lambda}_b} {\Delta \lambda}(\alpha_b^S \overline{\lambda}_b-1)
 \end{equation}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -411,28 +411,29 @@ It has an $1/\lambda$ photon distribution.
 \subsection{Power law}
 Let us assume in a band $V$ width the Flux of a star  ${\cal F}_S(\lambda)$ can be approximated at first order by a power law if index $\alpha_S$ as follow~:
 \begin{equation}
-{\cal F}_S(\lambda) \simeq {\cal F}_S(\lambda_V) \left( \frac{\lambda}{\overline{\lambda}_b} \right))^{\alpha_S}
+{\cal F}_S(\lambda) \simeq {\cal F}_S(\overline{\lambda}_b) \left( \frac{\lambda}{\overline{\lambda}_b} \right)^{\alpha_S}
 \end{equation}
 
 This expression can be developed as follow~:
 
 \begin{eqnarray}
-{\cal F}_S(\lambda) & \simeq &  {\cal F}_S(\lambda_V) + \left( \frac{d {\cal F}_S }{d\lambda}\right)({\lambda_V})(\lambda-\lambda_V) \\
-& \simeq & {\cal F}_S(\lambda_V) \alpha_S (\lambda-\lambda_V)
+{\cal F}_S(\lambda) & \simeq &  {\cal F}_S(\overline{\lambda}_b) + \left. \left( \frac{d {\cal F}_S }{d\lambda}\right)\right|_{\overline{\lambda}_b}(\lambda-\overline{\lambda}_b) \\
+& \simeq & {\cal F}_S(\overline{\lambda}_b) \frac{\alpha_S}{\overline{\lambda}_b} (\lambda-\overline{\lambda}_b)
 \end{eqnarray}
 
 \subsection{Exponential Law}
 If the flux is expressed as~:
 
 \begin{equation}
-{\cal F}_S(\lambda) \simeq {\cal F}_S(\lambda_V)  e^{\alpha_S (\lambda-\lambda_V)} 
+{\cal F}_S(\lambda) \simeq {\cal F}_S(\overline{\lambda}_b)  e^{\alpha_S (\lambda-\overline{\lambda}_b)} 
 \end{equation}
 
 then we still have the same approximation at first order:
 
 \begin{eqnarray}
-{\cal F}_S(\lambda) & \simeq &  {\cal F}_S(\lambda_V) + \left( \frac{d {\cal F}_S }{d\lambda}\right)({\lambda_V})(\lambda-\lambda_V) \\
-& \simeq & {\cal F}_S(\lambda_V) \alpha_S (\lambda-\lambda_V)
+{\cal F}_S(\lambda) & \simeq &  {\cal F}_S(\overline{\lambda}_b) + \left. \left( \frac{d {\cal F}_S }{d\lambda} \right) \right|_{\overline{\lambda}_b}
+(\lambda-\overline{\lambda}_b) \\
+& \simeq & {\cal F}_S(\overline{\lambda}_b) \alpha_S (\lambda-\overline{\lambda}_b)
 \end{eqnarray}
 
 
