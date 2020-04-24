@@ -34,6 +34,6 @@ Official throughput to use for the internship
 - **libradtran/**
 Simulate absorption profiles with libradtran
 
-## Generate individual moclecule absorption profile from librandtran output
+## Generate individual molecule absorption profile from librandtran output
 
 - **MakeAbsorptionPatterns/** : Generate fits and csv files for atmospheric profiles of O2, O3, PWV
