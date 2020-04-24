@@ -19,6 +19,7 @@ import sys,getopt
 import UVspec3
 
 FLAG_DEBUG=False
+FLAG_VERBOSE=False
 
 # Definitions and configuration
 #-------------------------------------
@@ -346,8 +347,10 @@ def ProcessSimulation(airmass_num,pwv_num,oz_num,press_num,prof_str='us',proc_st
         uvspec.inp["phi0"]       = '0'
         uvspec.inp["wavelength"]       = '250.0 1200.0'
         uvspec.inp["output_quantity"] = 'reflectivity' #'transmittance' #
-#       uvspec.inp["verbose"] = ''
-        uvspec.inp["quiet"] = ''
+        if FLAG_VERBOSE:
+            uvspec.inp["verbose"] = ''
+        else:
+            uvspec.inp["quiet"] = ''
 
   
 
@@ -594,9 +597,14 @@ def ProcessSimulationaer(airmass_num,pwv_num,oz_num,aer_num,press_num,prof_str='
         uvspec.inp["phi0"]       = '0'
         uvspec.inp["wavelength"]       = '250.0 1200.0'
         uvspec.inp["output_quantity"] = 'reflectivity' #'transmittance' #
-#       uvspec.inp["verbose"] = ''
-        uvspec.inp["quiet"] = ''
 
+
+        if FLAG_VERBOSE:
+            uvspec.inp["verbose"] = ''
+        else:
+            uvspec.inp["quiet"] = ''
+
+#
   
 
         if "output_quantity" in uvspec.inp.keys():
@@ -813,10 +821,11 @@ def ProcessSimulationaer1(airmass_num,pwv_num,oz_num,wl0_num,tau0_num,press_num)
         uvspec.inp["phi0"]       = '0'
         uvspec.inp["wavelength"]       = '250.0 1200.0'
         uvspec.inp["output_quantity"] = 'reflectivity' #'transmittance' #
-#       uvspec.inp["verbose"] = ''
-        uvspec.inp["quiet"] = ''
 
-  
+        if FLAG_VERBOSE:
+            uvspec.inp["verbose"] = ''
+        else:
+            uvspec.inp["quiet"] = ''
 
         if "output_quantity" in uvspec.inp.keys():
             outtextfinal=outtext+'_'+uvspec.inp["output_quantity"]
@@ -1045,10 +1054,12 @@ def ProcessSimulationaer2(airmass_num,pwv_num,oz_num,alpha_num,beta_num,press_nu
         uvspec.inp["phi0"]       = '0'
         uvspec.inp["wavelength"]       = '250.0 1200.0'
         uvspec.inp["output_quantity"] = 'reflectivity' #'transmittance' #
-#       uvspec.inp["verbose"] = ''
-        uvspec.inp["quiet"] = ''
+#
+        if FLAG_VERBOSE:
+            uvspec.inp["verbose"] = ''
+        else:
+            uvspec.inp["quiet"] = ''
 
-  
 
         if "output_quantity" in uvspec.inp.keys():
             outtextfinal=outtext+'_'+uvspec.inp["output_quantity"]
