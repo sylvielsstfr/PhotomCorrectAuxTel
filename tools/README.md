@@ -17,16 +17,16 @@ Tools show how to do something
 - **ViewAverageAtmosphere.ipynb** : View the average atmospheric profile and upper and lower limit
 
 
-## Read the LSST throughput
+## Examples that Read the LSST throughput
 
 Official throughput to use for the internship
 
 - **PlotSimpleLSSTFilters.ipynb** : very simple system transmission profile
 
-- **FiltersWithPySynPhot.py** : Use pysynphot to combine system and atmospheric throughput and view the observation.
+- **FiltersWithPySynPhot.py**  or **FiltersWithPySynPhot.ipynb** : Use pysynphot to combine system and atmospheric throughput and view the observation.
 
 ## Play with Magnitudes units
- - **MyVegaCalib.ipynb** use pysynphot to play with magnitudes, counts,....
+ - **MyVegaCalib.ipynb** use pysynphot to play with magnitudes, counts, using the Vega standard source.
 
  
 ## Generate atmospheric profiles with libradtran
