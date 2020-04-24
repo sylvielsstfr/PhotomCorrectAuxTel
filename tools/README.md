@@ -36,4 +36,9 @@ Simulate absorption profiles with libradtran
 
 ## Generate individual molecule absorption profile from librandtran output
 
-- **MakeAbsorptionPatterns/** : Generate fits and csv files for atmospheric profiles of O2, O3, PWV
+- **MakeAbsorptionPatterns/** : Generate fits and csv files for atmospheric profiles of O2, O3, PWV in files **absorption_pattern.csv**	, **absorption_pattern.fits**	
+
+## Generate the Filter boudaries
+
+-**MakeWavelengthBins/MakeWavelengthBins.ipynb** : Generate main filter boudaries. Those boudaries are saved in files
+**WaveLengthBins.csv**, **WaveLengthBins.fits**
