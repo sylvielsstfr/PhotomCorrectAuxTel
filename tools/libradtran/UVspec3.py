@@ -34,6 +34,7 @@ class UVspec:
         if verbose:
             print("Running uvspec with input file: ", inp)
             print("Output to file                : ", out)
+            print("Path to exec                : ", path)
         if path != '':
             cmd = path+'bin/uvspec '+  ' < ' + inp  +  ' > ' + out
         else:

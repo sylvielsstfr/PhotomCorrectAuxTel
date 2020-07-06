@@ -27,8 +27,9 @@ FLAG_VERBOSE=False
 # LibRadTran installation directory
 home = os.environ['HOME']+'/'
 libradtranpath = os.getenv('LIBRADTRANDIR')+'/'
+libradtrandatapath = libradtranpath + "/share/libRadtran/data"
 
-print(libradtranpath)
+print("libradtranpath=",libradtranpath)
 
 # Filename : RT_LS_pp_us_sa_rt_z15_wv030_oz30.txt
 #          : Prog_Obs_Rte_Atm_proc_Mod_zXX_wv_XX_oz_XX
@@ -66,7 +67,7 @@ OBS_Altitude = str(LSST_Altitude)
 #OBS_Altitude = str(MPL_Altitude)
 
 
-TOPDIR='simulations/RT/2.0.1/LS'
+TOPDIR='simulations/RT/2.0.3/LS'
 
 def CleanSimDir():   
     os.system("rm -rf simulations")
@@ -173,7 +174,9 @@ def ProcessSimulation(airmass_num,pwv_num,oz_num,press_num,prof_str='us',proc_st
     BaseFilename_part1=Prog+'_'+Obs+'_'+Rte+'_'
     
 
-    # Set up type of run
+    # Set up type of 
+    
+    
     runtype='clearsky' #'no_scattering' #aerosol_special #aerosol_default# #'clearsky'#     
     if Proc == 'sc':
         runtype='no_absorption'
@@ -297,9 +300,11 @@ def ProcessSimulation(airmass_num,pwv_num,oz_num,press_num,prof_str='us',proc_st
                     
         verbose=True
         uvspec = UVspec3.UVspec()
-        uvspec.inp["data_files_path"]  =  libradtranpath+'data'
+        #uvspec.inp["data_files_path"]  =  libradtranpath+'data'
+        uvspec.inp["data_files_path"]  =  libradtrandatapath
                 
-        uvspec.inp["atmosphere_file"] = libradtranpath+'data/atmmod/'+atmosphere+'.dat'
+        #uvspec.inp["atmosphere_file"] = libradtranpath+'data/atmmod/'+atmosphere+'.dat'
+        uvspec.inp["atmosphere_file"] = libradtrandatapath+'/atmmod/'+atmosphere+'.dat'
         uvspec.inp["albedo"]           = '0.2'
     
         uvspec.inp["rte_solver"] = rte_eq
@@ -341,7 +346,8 @@ def ProcessSimulation(airmass_num,pwv_num,oz_num,press_num,prof_str='us',proc_st
 
         uvspec.inp["output_user"] = 'lambda edir'
         uvspec.inp["altitude"] = OBS_Altitude   # Altitude  observatory
-        uvspec.inp["source"] = 'solar '+libradtranpath+'data/solar_flux/kurudz_1.0nm.dat'
+        uvspec.inp["source"] = 'solar '+libradtrandatapath+'/solar_flux/kurudz_1.0nm.dat'
+        #uvspec.inp["source"] = 'solar '+libradtranpath+'data/solar_flux/kurudz_1.0nm.dat'
         #uvspec.inp["source"] = 'solar '+libradtranpath+'data/solar_flux/kurudz_0.1nm.dat'
         uvspec.inp["sza"]        = str(sza)
         uvspec.inp["phi0"]       = '0'
@@ -545,9 +551,14 @@ def ProcessSimulationaer(airmass_num,pwv_num,oz_num,aer_num,press_num,prof_str='
         verbose=FLAG_DEBUG
         
         uvspec = UVspec3.UVspec()
-        uvspec.inp["data_files_path"]  =  libradtranpath+'data'
+        
+        #uvspec.inp["data_files_path"]  =  libradtranpath+'data'
+        uvspec.inp["data_files_path"]  =  libradtrandatapath
                 
-        uvspec.inp["atmosphere_file"] = libradtranpath+'data/atmmod/'+atmosphere+'.dat'
+        #uvspec.inp["atmosphere_file"] = libradtranpath+'data/atmmod/'+atmosphere+'.dat'
+        uvspec.inp["atmosphere_file"] = libradtrandatapath+'/atmmod/'+atmosphere+'.dat'
+        
+        
         uvspec.inp["albedo"]           = '0.2'
     
         uvspec.inp["rte_solver"] = rte_eq
@@ -591,7 +602,8 @@ def ProcessSimulationaer(airmass_num,pwv_num,oz_num,aer_num,press_num,prof_str='
 
         uvspec.inp["output_user"] = 'lambda edir'
         uvspec.inp["altitude"] = OBS_Altitude   # Altitude LSST observatory
-        uvspec.inp["source"] = 'solar '+libradtranpath+'data/solar_flux/kurudz_1.0nm.dat'
+        uvspec.inp["source"] = 'solar '+libradtrandatapath+'/solar_flux/kurudz_1.0nm.dat'
+        #uvspec.inp["source"] = 'solar '+libradtranpath+'data/solar_flux/kurudz_1.0nm.dat'
         #uvspec.inp["source"] = 'solar '+libradtranpath+'data/solar_flux/kurudz_0.1nm.dat'
         uvspec.inp["sza"]        = str(sza)
         uvspec.inp["phi0"]       = '0'
@@ -772,9 +784,14 @@ def ProcessSimulationaer1(airmass_num,pwv_num,oz_num,wl0_num,tau0_num,press_num)
                     
         verbose=True
         uvspec = UVspec3.UVspec()
-        uvspec.inp["data_files_path"]  =  libradtranpath+'data'
+        
+        #uvspec.inp["data_files_path"]  =  libradtranpath+'data'
+        uvspec.inp["data_files_path"]  =  libradtrandatapath
                 
-        uvspec.inp["atmosphere_file"] = libradtranpath+'data/atmmod/'+atmosphere+'.dat'
+        #uvspec.inp["atmosphere_file"] = libradtranpath+'data/atmmod/'+atmosphere+'.dat'
+        uvspec.inp["atmosphere_file"] = libradtrandatapath+'/atmmod/'+atmosphere+'.dat'
+        
+        
         uvspec.inp["albedo"]           = '0.2'
     
         uvspec.inp["rte_solver"] = rte_eq
@@ -815,7 +832,8 @@ def ProcessSimulationaer1(airmass_num,pwv_num,oz_num,wl0_num,tau0_num,press_num)
                 
         uvspec.inp["output_user"] = 'lambda edir'
         uvspec.inp["altitude"] = OBS_Altitude   # Altitude LSST observatory
-        uvspec.inp["source"] = 'solar '+libradtranpath+'data/solar_flux/kurudz_1.0nm.dat'
+        uvspec.inp["source"] = 'solar '+libradtrandatapath+'/solar_flux/kurudz_1.0nm.dat'
+        #uvspec.inp["source"] = 'solar '+libradtranpath+'data/solar_flux/kurudz_1.0nm.dat'
         #uvspec.inp["source"] = 'solar '+libradtranpath+'data/solar_flux/kurudz_0.1nm.dat'
         uvspec.inp["sza"]        = str(sza)
         uvspec.inp["phi0"]       = '0'
@@ -1000,9 +1018,13 @@ def ProcessSimulationaer2(airmass_num,pwv_num,oz_num,alpha_num,beta_num,press_nu
                     
         verbose=True
         uvspec = UVspec3.UVspec()
+        
         uvspec.inp["data_files_path"]  =  libradtranpath+'data'
+        uvspec.inp["data_files_path"]  =  libradtrandatapath
                 
-        uvspec.inp["atmosphere_file"] = libradtranpath+'data/atmmod/'+atmosphere+'.dat'
+        #uvspec.inp["atmosphere_file"] = libradtranpath+'data/atmmod/'+atmosphere+'.dat'
+        uvspec.inp["atmosphere_file"] = libradtrandatapath+'/atmmod/'+atmosphere+'.dat'
+        
         uvspec.inp["albedo"]           = '0.2'
     
         uvspec.inp["rte_solver"] = rte_eq
@@ -1048,7 +1070,8 @@ def ProcessSimulationaer2(airmass_num,pwv_num,oz_num,alpha_num,beta_num,press_nu
                 
         uvspec.inp["output_user"] = 'lambda edir'
         uvspec.inp["altitude"] = OBS_Altitude   # Altitude LSST observatory
-        uvspec.inp["source"] = 'solar '+libradtranpath+'data/solar_flux/kurudz_1.0nm.dat'
+        uvspec.inp["source"] = 'solar '+libradtrandatapath+'/solar_flux/kurudz_1.0nm.dat'
+        #uvspec.inp["source"] = 'solar '+libradtranpath+'data/solar_flux/kurudz_1.0nm.dat'
         #uvspec.inp["source"] = 'solar '+libradtranpath+'data/solar_flux/kurudz_0.1nm.dat'
         uvspec.inp["sza"]        = str(sza)
         uvspec.inp["phi0"]       = '0'
