@@ -5,6 +5,8 @@
 
     in /Users/dagoret/MacOSX/External/Spark/spark-2.4.6-bin-hadoop2.7
 
+
+
 - put bin path in PATH   
 
 ## Configureation
@@ -21,6 +23,7 @@
 
     pyspark --packages com.github.astrolabsoftware:spark-fits_2.11:0.6.0 
 
+    pyspark --packages com.github.astrolabsoftware:spark-fits_2.11:0.8.4
 
 ## in notebook
 
