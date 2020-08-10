@@ -16,12 +16,12 @@
 
 
 
-## Launch pyspack with jupyter notebook
+## Launch pyspack with jupyter notebook : BE CAREFULL, USE LAST VERSION OF SPARKFITS
 
 
     (base) /Users/dagoret/MacOSX/GitHub/LSST/PhotomCorrectAuxTel/tools/Spark>
 
-    pyspark --packages com.github.astrolabsoftware:spark-fits_2.11:0.6.0 
+    #pyspark --packages com.github.astrolabsoftware:spark-fits_2.11:0.6.0 
 
     pyspark --packages com.github.astrolabsoftware:spark-fits_2.11:0.8.4
 

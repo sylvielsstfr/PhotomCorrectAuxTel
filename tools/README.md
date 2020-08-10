@@ -42,3 +42,13 @@ Simulate absorption profiles with libradtran
 
 -**MakeWavelengthBins/MakeWavelengthBins.ipynb** : Generate main filter boudaries. Those boudaries are saved in files
 **WaveLengthBins.csv**, **WaveLengthBins.fits**
+
+
+
+## Convert to Binary Tble for Spark
+
+-**ConvertImageToBinaryTable.ipynb**: Convert into fits binary table format that is understood by Spark
+		
+-**ConvertImageToParquetTable.ipynb**: Convert directly into Parquet format (NOT IMPLEMENTED)
+
+-**ConvertSmallImageToOneBigImage.ipynb**: Convert into an image
