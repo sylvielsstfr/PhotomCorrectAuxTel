@@ -1,0 +1,13 @@
+# README.md
+
+
+Find_Wavelets_coefficients.ipynb
+MLfit_atmlsst_wavelets_nocld.ipynb
+Optimum_number_Wavelets_coefficients.ipynb
+ProduceWaveletCoeffDataset.ipynb
+Wavelets_decomposition.ipynb
+Wavelets_decomposition_6levels.ipynb
+Wavelets_decomposition_8levels.ipynb
+Wavelets_decomposition_scalogram.ipynb
+Waveletsfit.ipynb
+Waveletsfit_PSDw.ipynb
