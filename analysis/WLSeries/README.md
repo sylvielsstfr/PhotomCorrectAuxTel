@@ -14,6 +14,9 @@
 
 - **Waveletsfit_PSDw.ipynb**
 
+- **Waveletsfit.ipynb**	
+
+
 - **Wavelets_decomposition_scalogram.ipynb** : decomposition of coefficients
 
 ## Wavelet decomposition
@@ -42,16 +45,17 @@ several levels of decompostion from 1 to 9
 - **ProduceWaveletCoeffDataset_cloud.ipynb**	
 
 
-## Unknown
-- **Waveletsfit.ipynb**	
-
 
 ## Machine Learning
 
-Linear Fit to estimate VAOD,PWV, O3, CLD
+Linear Fit to estimate VAOD,PWV, O3, CLD.
+Try regularisation with Ridge and Lasso, using scikit learn
 
 - **MLfit_atmlsst_wavelets_nocld.ipynb**	
-- **MLfit_atmlsst_wavelets_cloud.ipynb**	
+- **MLfit_atmlsst_wavelets_cloud.ipynb**
+
+
+- **MLfitOptim_atmlsst_wavelets_cloud.ipynb** : loop on the coefficient dataset, use only Linear Fit (No reg)	
 
 
 
