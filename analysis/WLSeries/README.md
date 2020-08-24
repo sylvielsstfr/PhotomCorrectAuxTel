@@ -40,9 +40,12 @@ work on all the statistics of the simulated transmission
 
 several levels of decompostion from 1 to 9		
 	
-- **ProduceWaveletCoeffDataset.ipynb**	
+- **ProduceWaveletCoeffDataset.ipynb**: produce dataset using atmospheric transparency excluding clouds.	
 
-- **ProduceWaveletCoeffDataset_cloud.ipynb**	
+- **ProduceWaveletCoeffDataset_cloud.ipynb** : produce dataset using atmospheric transparency including clouds.	
+
+
+- **ProduceWaveletCoeffDatasetSpectra.ipynb**: produce dataset unisng spectra including clouds.	
 
 
 

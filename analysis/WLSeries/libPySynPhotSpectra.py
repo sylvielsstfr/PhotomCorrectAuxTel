@@ -148,12 +148,13 @@ def plot_sed(t, ax):
 
         # if filename!="flat":
         cm = ax.plot(X[wavelengths_indexes], Y[wavelengths_indexes], color=all_colors[idx], label=label)
-
+        #cm = ax.plot(X[wavelengths_indexes], Y[wavelengths_indexes], color=all_colors[idx])
+        
         idx += 1
 
     # ax.set_xlim(3500.,11000.)
     # ax.set_ylim(0.,3.)
-    ax.legend()
+    ax.legend(prop={'size': 12})
     ax.grid()
 
     xlabel = ' $\\lambda$ (Angstrom)'
