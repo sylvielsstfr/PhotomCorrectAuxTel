@@ -165,6 +165,40 @@ h_n(z) & = & \frac{f_n(z)}{z} \nonumber
 \end{itemize}
 }}
 
+\fbox{\parbox{0.5\textwidth}{
+\begin{eqnarray}
+f_z(z) & = & z^\gamma = (1+\delta z)^\gamma = 1+ \gamma \delta z - \frac{1}{2}(\gamma-\gamma^2) (\delta z)^2 \nonumber \\
+g_z(z) & = & z^{-\gamma} = 1 - \gamma \delta z + \frac{1}{2}(\gamma^2+\gamma) (\delta z)^2 \nonumber \\
+z & = & 1 + \delta z \nonumber
+\end{eqnarray}
+}}
+
+\fbox{\parbox{\textwidth}{
+\begin{itemize}
+\item add interaction terms $g_z(z^i)\cdot m^i_j$:
+\begin{itemize}
+\item  $\delta z^i \cdot m^i_j$,
+\item  $(\delta z^i)^2 \cdot m^i_j$,
+\end{itemize} 
+\end{itemize}
+\begin{eqnarray}
+\tau_{cld}^i & =&  \beta_0^{cld 0} + \beta_0^{cld 1}\cdot \delta z^i + \beta_0^{cld 2}\cdot(\delta z^i)^2  + \sum_{j=1}^{N_j} \left( \beta_j^{cld 0} \cdot m_j^i + \beta_j^{cld 1} \cdot m_j^i\cdot \delta z^i + \beta_j^{cld 2} \cdot m_j^i\cdot(\delta z^i)^2  \right) \nonumber \\
+\tau_{aer}^i & =&  \beta_0^{aer 0} + \beta_0^{aer 1}\cdot \delta z^i + \beta_0^{aer 2}\cdot(\delta z^i)^2 + \sum_{j=1}^{N_j} \left( \beta_j^{aer 0} \cdot m_j^i \beta_j^{aer 1} \cdot m_j^i\cdot \delta z^i + \beta_j^{aer 2} \cdot m_j^i\cdot(\delta z^i)^2   \right) \nonumber \\
+\kappa_{O_3}^i & =&  \beta_0^{O_3 0} + \beta_0^{O_3 1}\cdot \delta z^i + \beta_0^{O_3 2}\cdot(\delta z^i)^2  + \sum_{j=1}^{N_j} \left( \beta_j^{O_3 0} \cdot m_j^i + \beta_j^{O_3 1} \cdot m_j^i \cdot \delta z^i + \beta_j^{O_3 2} \cdot m_j^i\cdot(\delta z^i)^2  \right) \nonumber \\
+\kappa_{H_2O}^i & =&  \beta_0^{H_2O 0} + \beta_0^{H_2O 1}\cdot \delta z^i + \beta_0^{H_2O 2}\cdot(\delta z^i)^2 + \sum_{j=1}^{N_j} \left( \beta_j^{H_2O 0} \cdot m_j^i + \beta_j^{H_2O 1} \cdot m_j^i\cdot \delta z^i + \beta_j^{H_2O 2} \cdot m_j^i\cdot(\delta z^i)^2 \right) \nonumber
+\end{eqnarray}
+
+}}
+
+
+\fbox{\parbox{\textwidth}{
+\begin{eqnarray}
+\tau_{cld}^i & =&  \beta_0^{cld}/z^i + \sum_{j=1}^{N_j} \beta_j^{cld} \cdot m_j^i/z^i \nonumber \\
+\tau_{aer}^i & =&  \beta_0^{aer}/z^i + \sum_{j=1}^{N_j} \beta_j^{aer} \cdot m_j^i/z^i \nonumber \\
+\kappa_{O_3}^i & =&  \beta_0^{O_3 0} + \beta_0^{O_3 1}\cdot \delta z^i + \beta_0^{O_3 2}\cdot(\delta z^i)^2  + \sum_{j=1}^{N_j} \left( \beta_j^{O_3 0} \cdot m_j^i + \beta_j^{O_3 1} \cdot m_j^i \cdot \delta z^i + \beta_j^{O_3 2} \cdot m_j^i\cdot(\delta z^i)^2  \right) \nonumber \\
+\kappa_{H_2O}^i & =&  \beta_0^{H_2O 0} + \beta_0^{H_2O 1}\cdot \delta z^i + \beta_0^{H_2O 2}\cdot(\delta z^i)^2 + \sum_{j=1}^{N_j} \left( \beta_j^{H_2O 0} \cdot m_j^i + \beta_j^{H_2O 1} \cdot m_j^i\cdot \delta z^i + \beta_j^{H_2O 2} \cdot m_j^i\cdot(\delta z^i)^2 \right) \nonumber
+\end{eqnarray}
+}}
 
 
 \newpage
