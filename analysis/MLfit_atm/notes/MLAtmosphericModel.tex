@@ -1,0 +1,186 @@
+%\documentclass{article}           %% ceci est un commentaire (apres le caractere %)
+%\usepackage[latin1]{inputenc}     %% adapte le style article aux conventions francophones
+%\usepackage[T1]{fontenc}          %% permet d'utiliser les caractères accentués
+%\usepackage[dvips]{graphicx}      %% permet d'importer des graphiques au format .EPS (postscript)
+%\usepackage{fancybox}		   %% package utiliser pour avoir un encadré 3D des images
+%\usepackage{makeidx}              %% permet de générer un index automatiquement
+
+
+\documentclass{article}[12pt]
+\usepackage[left=1.5cm,right=1.5cm,top=1.5cm,bottom=2cm]{geometry} % page settings
+\usepackage{amsmath} % provides many mathematical environments & tools
+\usepackage{indentfirst}
+\setlength{\parindent}{24pt}
+%\setlength{\baselineskip}{1cm}
+%\parskip = \baselineskip
+%\parskip = 1cm 
+%\setlength{\parskip}{1cm}
+%\usepackage[parfill]{parskip}
+
+\setlength{\parindent}{4em}
+\setlength{\parskip}{1em}
+\renewcommand{\baselinestretch}{1.1}
+
+
+\usepackage[T1]{fontenc} % Use 8-bit encoding that has 256 glyphs
+\usepackage[utf8]{inputenc} % Required for including letters with accents
+\usepackage{graphicx} % Required for including images
+\graphicspath{{figures/}} % Set the default folder for images
+
+
+\usepackage{enumitem} % Required for manipulating the whitespace between and within lists
+\usepackage{lipsum} % Used for inserting dummy 'Lorem ipsum' text into the template
+%\usepackage{subfig} % Required for creating figures with multiple parts (subfigures)
+\usepackage{subcaption}
+\usepackage{amsmath,amssymb,amsthm} % For including math equations, theorems, symbols, etc
+\usepackage[toc]{appendix}
+
+\usepackage{tikz}
+\usepackage{pgfplots}
+
+
+
+
+%\usepackage{pst-func}
+%\pgfplotsset{compat=newest}
+
+%\directlua{
+%  ffi=require("ffi")
+%  ffi.cdef[[
+%  double jn(int n, double x);
+%  double yn(int n, double x);
+%  ]]
+%}
+
+%\pgfmathdeclarefunction{BesselJ}{2}{%
+%  \edef\pgfmathresult{%
+%    \directlua{tex.print(ffi.C.jn(\pgfmathfloatvalueof{#1},%\pgfmathfloatvalueof{#2}))}%
+%  }%
+%}
+
+%\pgfmathdeclarefunction{BesselY}{2}{%
+%  \edef\pgfmathresult{%
+%    \directlua{tex.print(ffi.C.yn(\pgfmathfloatvalueof{#1},%\pgfmathfloatvalueof{#2}))}%
+%  }%
+%}
+
+
+
+
+
+\graphicspath{{figures/}} % Set the default folder for images
+\setlength{\parindent}{0mm}
+\usepackage{hyperref}
+
+\title{Machine learning Atmospheric Model}     %% \title est une macro, entre { } figure son premier argument
+\author{Sylvie Dagoret-Campagne}        %% idem
+
+\makeindex		    %% macro qui permet de générer l'index
+\bibliographystyle{prsty}	  %% le style utilisé pour créer la bibliographie
+\begin{document}                  %% signale le début du document
+
+
+
+\maketitle                        %% produire à cet endroit le titre de l'article à partir des informations fournies ci-dessus (title, author)
+%\newpage
+%\tableofcontents                  %% produire à cet endroit la table des matièree				
+
+\section{Formula}	
+
+\fbox{\parbox{0.65\textwidth}{
+\begin{eqnarray}
+\left. \delta F(\lambda,t)\right|_{ADU} & = & \frac{S_{coll}}{g_{el}} \cdot T^{atm}(\lambda,t) 
+\cdot T^{opt}(\lambda)
+\cdot T^{grat}(\lambda)
+\cdot \epsilon_{CCD}(\lambda) 
+\cdot \frac{dN_{\gamma}}{d\lambda}(\lambda) d\lambda \nonumber \\
+& = & Cte(\lambda ) \times T^{atm}(\lambda,t) d\lambda \nonumber \\
+T^{atm}(\lambda,t) & = & \exp\left( -\tau_{cld}(t)z -\tau_{ray}(\lambda)z
+-\tau_{aer}(\lambda,t)z  \right. \nonumber \\
+&  - & \left. \sum_{n=O_2,O_3,H_2O} \kappa_{n}(\lambda,t)f_n(z)
+\right) \nonumber \\
+\tau_{ray}(\lambda)& \approx & \tau_{ray}\cdot g_{ray}(\lambda) \nonumber \\   
+\tau_{aer}(\lambda,t)& \approx & \tau_{aer}(t)\cdot g_{aer}(\lambda) \nonumber \\  
+\kappa_n(\lambda,t) & \approx & \kappa_n(t) \cdot g_{n}(\lambda) \nonumber \\
+g_n(\lambda ), \kappa_n(\lambda) & & {\rm known \,\,\, templates} \nonumber \\
+f_n(z) & \approx & z^\gamma \,\, \, , \,\, \frac{1}{2} \le \gamma \le 1 \nonumber \\
+& \approx & (1-\gamma) + \gamma z + \cdots \nonumber
+\end{eqnarray}
+}}
+
+
+\fbox{\parbox{0.4\textwidth}{
+\begin{eqnarray}
+\frac{2.3}{2.5}m(\lambda,t) & = & Cte(\lambda) + \nonumber \\
+&  & \tau_{ray}(\lambda)\cdot z + \nonumber  \\
+&  & \tau_{cld}(t)\cdot z + \nonumber  \\
+&  & \tau_{aer}(t)\cdot g_{aer}(\lambda)\cdot z + \nonumber  \\
+&  & \sum_{n=O_2,O_3,H_2O} \kappa_{n}(t)g_{n}(\lambda)\cdot f_n(z) \nonumber
+\end{eqnarray}
+}}
+
+\fbox{\parbox{0.6\textwidth}{
+\begin{eqnarray}
+t & \rightarrow & i \,\,\,{\rm sample \,\, number}, \,\, 0\le i \le N_{obs} \nonumber \\
+\lambda & \rightarrow & j \,\,\,{\rm wavelength\,\, index}, \,\,j < 700 \,\,( 400 nm \le \lambda < 1100 nm) \nonumber \\
+m^{\prime i}_j & = & \tau_{cld}^i + g_{aer \, j} \cdot \tau_{aer}^i +
+\sum_{n=O_3,H_2O} g_{n\,\,j}\cdot h_n(z) \cdot \kappa^i_{n}
+\nonumber \\
+m^{\prime\,i}_j  & = & \frac{\frac{2.3}{2.5}m^i_j - Cte_j}{z} - \tau_{ray\,j}- 
+g_{O_2\,\,j}\cdot h_{O_2}(z) \cdot \kappa_{O_2} \nonumber \\
+h_n(z) & = & \frac{f_n(z)}{z} \nonumber
+\end{eqnarray}
+}}
+
+\fbox{\parbox{\textwidth}{
+\begin{itemize}
+\item apriori known constants :
+\begin{itemize}
+\item $Cte_j$ known from instrument calibration
+\item $\tau_{ray\,j}$ known from atmospheric model , ex libradtran, (analitic formula known)
+\item $g_{aer \, j}$ known from atmospheric model , ex libradtran,
+\item $g_{O_2\,\,j}$ known from atmospheric model , ex libradtran,
+\item $g_{O_3\,\,j},g_{H_2O\,\,j}$ known from atmospheric model , ex libradtran,
+\item $f_n(z)$ known from atmospheric model , ex libradtran
+\end{itemize}
+\item for each spectrum observation $i$ :
+\begin{itemize}
+\item $\approx 700$ $j$-observations $m^i_j$ (or $m^{\prime i}_j$),
+\item only 4 unknown variables to estimate: $\tau_{cld}^i$,$\tau_{aer}^i$, $\kappa^i_{O_3}$,$\kappa^i_{H2O}$,
+\item linear equations between observed variables and variables to estimate.
+\end{itemize}
+\end{itemize}
+}}
+
+
+\fbox{\parbox{0.55\textwidth}{
+\begin{eqnarray}
+\tau_{cld}^i & =&  \beta_0^{cld} + \sum_{j=1}^{N_j} \beta_j^{cld} \cdot m_j^i \nonumber \\
+\tau_{aer}^i & =&  \beta_0^{aer} + \sum_{j=1}^{N_j} \beta_j^{aer} \cdot m_j^i \nonumber \\
+\kappa_{O_3}^i & =&  \beta_0^{O_3} + \sum_{j=1}^{N_j} \beta_j^{O_3} \cdot m_j^i \nonumber \\
+\kappa_{H_2O}^i & =&  \beta_0^{H2_0} + \sum_{j=1}^{N_j} \beta_j^{H_20} \cdot m_j^i \nonumber
+\end{eqnarray}
+\begin{itemize}
+\item number of coefficients $\beta_j^n$  to estimate : $4 \times(N_j+1) \approx 2800 $
+\end{itemize}
+}}
+
+
+
+\newpage
+\begin{thebibliography}{99}
+
+\bibitem{ISL}{G. James 2015} \\
+An introduction to Statistical learning with application in R
+\url{http://faculty.marshall.usc.edu/gareth-james/ISL/}
+
+\bibitem{ESL}{T. Hastie 2013} \\
+The elements of statistical learning
+\url{https://web.stanford.edu/~hastie/Papers/ESLII.pdf}
+
+
+\end{thebibliography}
+
+
+
+\end{document}
