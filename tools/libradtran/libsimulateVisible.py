@@ -144,17 +144,17 @@ def ProcessSimulation(airmass_num,pwv_num,oz_num,press_num,prof_str='us',proc_st
     ProcessSimulation(airmass_num,pwv_num,oz_num) 
     No aerosol simulation is performed
     """
-    
- 
-    print('--------------------------------------------')
-    print(' 1) airmass = ', airmass_num)
-    print(' 2) pwv = ', pwv_num)
-    print(' 3) oz = ', oz_num)
-    print(' 4) pressure  = ',press_num)
-    print(' 5) atmospheric profile = ',prof_str)
-    print(' 6) interaction processes = ',proc_str)
-    print(' 7) cloud extinction = ',cloudext)
-    print('--------------------------------------------')
+
+    if FLAG_DEBUG:
+        print('--------------- ProcessSimulation -----------------------------')
+        print(' 1) airmass = ', airmass_num)
+        print(' 2) pwv = ', pwv_num)
+        print(' 3) oz = ', oz_num)
+        print(' 4) pressure  = ',press_num)
+        print(' 5) atmospheric profile = ',prof_str)
+        print(' 6) interaction processes = ',proc_str)
+        print(' 7) cloud extinction = ',cloudext)
+        print('--------------------------------------------')
    
     # set the interaction process
     
@@ -298,7 +298,9 @@ def ProcessSimulation(airmass_num,pwv_num,oz_num,press_num,prof_str='us',proc_st
             
         BaseFilename=BaseFilename_part1+atmkey+'_'+Proc+'_'+Mod+'_z'+str(amfileindex)+'_'+WVXX+str(wvfileindex) +'_'+OZXX+str(ozfileindex) +"_"+CLD+cld_str
                     
-        verbose=True
+        #verbose=True
+        verbose=FLAG_DEBUG
+
         uvspec = UVspec3.UVspec()
         #uvspec.inp["data_files_path"]  =  libradtranpath+'data'
         uvspec.inp["data_files_path"]  =  libradtrandatapath
@@ -389,8 +391,7 @@ def ProcessSimulationaer(airmass_num,pwv_num,oz_num,aer_num,press_num,prof_str='
     """
  
     if FLAG_DEBUG:
-        print('--------------------------------------------')
-        print('ProcessSimulationaer')
+        print('------------- ProcessSimulationaer -------------------------------')
         print(' 1) airmass = ', airmass_num)
         print(' 2) pwv = ', pwv_num)
         print(' 3) oz = ', oz_num)
@@ -550,7 +551,8 @@ def ProcessSimulationaer(airmass_num,pwv_num,oz_num,aer_num,press_num,prof_str='
         BaseFilename=BaseFilename_part1+atmkey+'_'+Proc+'_'+Mod+'_z'+str(amfileindex)+'_'+WVXX+str(wvfileindex) +'_'+OZXX+str(ozfileindex)+'_'+AEXX+str(aer_index)+"_"+CLD+cld_str
                     
         verbose=FLAG_DEBUG
-        
+
+
         uvspec = UVspec3.UVspec()
         
         #uvspec.inp["data_files_path"]  =  libradtranpath+'data'
@@ -595,7 +597,8 @@ def ProcessSimulationaer(airmass_num,pwv_num,oz_num,aer_num,press_num,prof_str='
         if press_num>400. and press_num<1030.:
             uvspec.inp["pressure"] = press_num
         else:
-            print("creazy pressure p=",press_num, ' hPa')
+            if FLAG_VERBOSE:
+                print("creazy pressure p=",press_num, ' hPa')
 
         uvspec.inp["ic_file"] = "1D ./IC.DAT"
         uvspec.inp["ic_properties"] = "yang"
@@ -828,7 +831,8 @@ def ProcessSimulationaer1(airmass_num,pwv_num,oz_num,wl0_num,tau0_num,press_num)
         if press_num>400. and press_num<1030.:
             uvspec.inp["pressure"] = press_num
         else:
-            print("creazy pressure p=",press_num, ' hPa')
+            if FLAG_VERBOSE:
+                print("creazy pressure p=",press_num, ' hPa')
                     
                 
         uvspec.inp["output_user"] = 'lambda edir'

@@ -6,7 +6,7 @@
 #    update        : September 11th 2020
 #
 # run :
-#       >python generateatmparameters.py --config config/default.ini
+#       >python simulateatmtransparency.py --config config/default.ini -n0
 #
 ###################################################################################################################
 
@@ -14,8 +14,10 @@
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d as plt3d
 import numpy as np
-import os
+import os,sys
 import matplotlib as mpl
+import matplotlib.colors as colors
+import matplotlib.cm as cmx
 import pandas as pd
 import itertools
 
@@ -46,6 +48,10 @@ params = {'legend.fontsize': 'x-large',
          'xtick.labelsize':'x-large',
          'ytick.labelsize':'x-large'}
 plt.rcParams.update(params)
+
+os.getenv('LIBRADTRANDIR')
+sys.path.append('../libradtran')
+import libsimulateVisible
 
 
 
@@ -136,12 +142,14 @@ if __name__ == "__main__":
 
 
     packetnum = int(results_args.packetnum)
+    packet_str = str(packetnum).zfill(4)
 
-    msg = f"Packet number : {packetnum}"
+    msg = f"Packet number : {packetnum}  Packet string {packet_str}"
     logger.info(msg)
 
+    ###########################################################################################################
     # 1) CONFIGURATION
-    #------------------
+    # ###########################################################################################################
     logger.info('1) Configuration')
 
     config = configparser.ConfigParser()
@@ -168,8 +176,17 @@ if __name__ == "__main__":
         msg = f"empty section GENERAL in config file {config_filename} !"
         logger.error(msg)
 
+    if 'GENERAL' in config_section:
 
-    if 'SIMTRANSPARENCY'in config_section:
+        FLAG_DEBUG = bool(int(config['GENERAL']['FLAG_DEBUG']))
+        FLAG_VERBOSE = bool(int(config['GENERAL']['FLAG_VERBOSE']))
+        FLAG_PLOT = bool(int(config['GENERAL']['FLAG_PLOT']))
+        FLAG_PRINT = bool(int(config['GENERAL']['FLAG_PRINT']))
+    else:
+        msg = f"empty section GENERAL in config file {config_filename} !"
+        logger.error(msg)
+
+    if 'SIMTRANSPARENCY' in config_section:
         input_file = config['SIMTRANSPARENCY']['inputfile']
         input_dir = config['SIMTRANSPARENCY']['inputdir']
 
@@ -177,6 +194,13 @@ if __name__ == "__main__":
         output_dir = config['SIMTRANSPARENCY']['outputdir']
 
         packetsize = int(config['SIMTRANSPARENCY']['packetsize'])
+
+    output_file_split = output_file.split(".")
+    output_file = output_file_split[0] + "_" + packet_str + "." + output_file_split[1]
+
+    full_inputfilename = os.path.join(input_dir, input_file)
+    full_outputfilename = os.path.join(output_dir, output_file)
+
 
 
 
@@ -189,3 +213,155 @@ if __name__ == "__main__":
 
     msg = f"NROWMIN = {NROWMIN} , NROWMAX  = {NROWMAX}  "
     logger.info(msg)
+
+    msg = f"FLAG_PLOT = {FLAG_PLOT}"
+    logger.info(msg)
+
+    msg = f"FLAG_VERBOSE = {FLAG_VERBOSE}"
+    logger.info(msg)
+
+    msg = f"input file name = {full_inputfilename}"
+    logger.info(msg)
+
+    msg = f"output file name = {full_outputfilename}"
+    logger.info(msg)
+
+
+    ##########################################################################################################
+    # 2) Open input file atmospheric parameters
+    ##########################################################################################################
+    hduin = fits.open(full_inputfilename)
+
+
+    if FLAG_VERBOSE:
+        msg = "{}".format(hduin.info())
+        logger.info(msg)
+
+    headerin = hduin[0].header
+    datain = hduin[0].data
+
+    NSIM = len(datain)
+
+    if NROWMIN > NSIM:
+        msg = f" >>> NROWMIN = {NROWMIN} greater than  NSIM={NSIM} ==> stop simulation"
+        logger.error(msg)
+
+    if FLAG_VERBOSE:
+        logger.info(headerin)
+        logger.info(datain[0, :])
+
+
+
+    # decode the header
+    hdr = headerin
+    NSIMH = hdr['NBATMSIM']
+    idx_num = hdr['ID_NUM']
+    idx_am = hdr['ID_AM']
+    idx_vaod = hdr['ID_VAOD']
+    idx_pwv = hdr['ID_PWV']
+    idx_o3 = hdr['ID_O3']
+    idx_cld = hdr['ID_CLD']
+    idx_res = hdr['ID_RES']
+
+
+    ##################################################################################################################
+    #  3) Simulate atmosphere with libradtran
+    ##################################################################################################################
+
+    all_wl = []
+    all_transm = []
+    all_z = []
+
+    # first simulation to determine which is the wavelength length
+    path, thefile = libsimulateVisible.ProcessSimulation(1, 0, 0, 0, prof_str='us', proc_str='sa', cloudext=0)
+    data = np.loadtxt(os.path.join(path, thefile))
+    wl = data[:, 0]
+    atm = data[:, 1]
+    NWL = len(wl)
+    dataout = np.zeros((packetsize + 1, idx_res + NWL))
+    dataout[0, idx_res:] = wl
+    idx = 0
+    for irow in np.arange(min(NROWMIN, NSIM), min(NSIM, NROWMAX) + 1):
+
+        am = datain[irow, idx_am]
+        pwv = datain[irow, idx_pwv]
+        ozone = datain[irow, idx_o3]
+        aer = datain[irow, idx_vaod]
+        pressure = 0
+        cloudext = datain[irow, idx_cld]
+        msg = f"run libradtran : index={irow}, am={am:2.2f}, pwv={pwv:2.2f}, ozone={ozone:3.2f}, aer={aer:2.2f}"
+        if FLAG_VERBOSE:
+            logger.info(msg)
+        else:
+            if idx % 10 == 0:
+                logger.info(msg)
+
+        # path,thefile=libsimulateVisible.ProcessSimulation(am,pwv,ozone,pressure,prof_str='us',proc_str='sa',cloudext=cloudext)
+        path, thefile = libsimulateVisible.ProcessSimulationaer(am, pwv, ozone, aer, pressure, prof_str='us',
+                                                                proc_str='as', cloudext=0)
+
+        data = np.loadtxt(os.path.join(path, thefile))
+        wl = data[:, 0]
+        atm = data[:, 1]
+        all_wl.append(wl)
+        all_transm.append(atm)
+        all_z.append(am)
+
+        dataout[idx + 1, idx_num] = irow
+        dataout[idx + 1, idx_am] = am
+        dataout[idx + 1, idx_vaod] = aer
+        dataout[idx + 1, idx_pwv] = pwv
+        dataout[idx + 1, idx_o3] = ozone
+        dataout[idx + 1, idx_cld] = cloudext
+        dataout[idx + 1, idx_res:] = atm
+
+        idx += 1
+
+
+    ################################################################################################################
+    # 4)  Plot
+    ################################################################################################################
+
+    if FLAG_PLOT:
+
+        jet = plt.get_cmap('jet')
+        cNorm = colors.Normalize(vmin=0, vmax=packetsize)
+        scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+        all_colors = scalarMap.to_rgba(np.arange(packetsize), alpha=1)
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        for index in np.arange(packetsize):
+            am = all_z[index]
+            label = f'z={am:2.2f}'
+            ax.plot(all_wl[index], -2.5 * np.log10(all_transm[index]) / am, color=all_colors[index], label=label);
+        if packetsize <= 10:
+            ax.legend()
+        ax.set_ylim(0, 2)
+        ax.grid()
+        ax.set_xlabel("$\lambda$ (nm)")
+        ax.set_ylabel("mag")
+        plt.show()
+
+    if FLAG_PLOT:
+        fig = plt.figure(figsize=(20, 6))
+        ax = fig.add_subplot(111)
+        ax.imshow(dataout, origin="lower", aspect="auto", interpolation="nearest", vmin=0, vmax=1, cmap='jet',extent=[wl.min(), wl.max(), NROWMIN - 1, NROWMAX])
+        ax.grid()
+        ax.set_xlabel("$\lambda$ (nm)")
+        ax.set_ylabel("row number")
+        ax.set_title("dataout")
+        plt.show()
+
+    ################################################################################################################
+    # 5)  Save output file
+    ################################################################################################################
+    msg = f"save in output file {full_outputfilename}"
+    logger.info(msg)
+
+    headerout = headerin
+
+    hdu = fits.PrimaryHDU(dataout, header=headerout)
+    hdu.writeto(full_outputfilename, overwrite=True)
+
+
