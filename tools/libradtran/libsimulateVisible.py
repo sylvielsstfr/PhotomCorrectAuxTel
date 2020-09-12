@@ -422,7 +422,8 @@ def ProcessSimulationaer(airmass_num,pwv_num,oz_num,aer_num,press_num,prof_str='
     aer_index=int(aer_num*100.)
 
     # Set up type of run
-    runtype='aerosol_special' #'no_scattering' #aerosol_special #aerosol_default# #'clearsky'#     
+    runtype='aerosol_special' #'no_scattering' #aerosol_special #aerosol_default# #'clearsky'#
+    Proc='as'
     
     #Proc='as'  # Absoprtion + Rayleigh + aerosols special
     
@@ -434,7 +435,7 @@ def ProcessSimulationaer(airmass_num,pwv_num,oz_num,aer_num,press_num,prof_str='
         runtype='no_scattering'
         outtext='no_scattering'
     elif Proc == 'sa':
-        runtype=='clearsky'
+        runtype='clearsky'
         outtext='clearsky'
     elif Proc == 'ae':   
         runtype='aerosol_default'
@@ -443,7 +444,7 @@ def ProcessSimulationaer(airmass_num,pwv_num,oz_num,aer_num,press_num,prof_str='
         runtype='aerosol_special'
         outtext='aerosol_special'
     else:
-        runtype=='clearsky'
+        runtype='clearsky'
         outtext='clearsky'
 
 #   Selection of RTE equation solver        
