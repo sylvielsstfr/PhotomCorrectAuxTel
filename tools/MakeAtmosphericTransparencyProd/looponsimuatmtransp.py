@@ -1,3 +1,12 @@
+####################################################################################################################
+# python looponsimuatmtransp.py -f 6 -l 14
+#
+#- author : Sylvie Dagoret-Campagne
+#- affiliation : IJCLab/CNRS/IN2P3
+#- creation date: September 11th 2020
+####################################################################################################################
+
+
 import subprocess
 
 import numpy as np
