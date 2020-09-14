@@ -145,7 +145,7 @@ if __name__ == "__main__":
     packet_str = str(packetnum).zfill(4)
 
     msg = f"Packet number : {packetnum}  Packet string {packet_str}"
-    logger.info(msg)
+    logger.warning(msg)
 
     ###########################################################################################################
     # 1) CONFIGURATION
@@ -230,6 +230,9 @@ if __name__ == "__main__":
     ##########################################################################################################
     # 2) Open input file atmospheric parameters
     ##########################################################################################################
+
+    logger.info('2) Atmospheric Parameter')
+
     hduin = fits.open(full_inputfilename)
 
 
@@ -268,6 +271,8 @@ if __name__ == "__main__":
     #  3) Simulate atmosphere with libradtran
     ##################################################################################################################
 
+    logger.info('3) Simulation')
+
     all_wl = []
     all_transm = []
     all_z = []
@@ -280,8 +285,15 @@ if __name__ == "__main__":
     NWL = len(wl)
     dataout = np.zeros((packetsize + 1, idx_res + NWL))
     dataout[0, idx_res:] = wl
-    idx = 0
-    for irow in np.arange(min(NROWMIN, NSIM), min(NSIM, NROWMAX) + 1):
+
+    IDXMIN=min(NROWMIN, NSIM)
+    IDXMAX=min(NSIM, NROWMAX)
+
+    msg=f" - simulation from row {IDXMIN} to {IDXMAX}"
+    logger.info(msg)
+
+    idx = 0 # counter
+    for irow in np.arange(IDXMIN,IDXMAX + 1):
 
         am = datain[irow, idx_am]
         pwv = datain[irow, idx_pwv]
@@ -289,7 +301,7 @@ if __name__ == "__main__":
         aer = datain[irow, idx_vaod]
         pressure = 0
         cloudext = datain[irow, idx_cld]
-        msg = f"run libradtran : index={irow}, am={am:2.2f}, pwv={pwv:2.2f}, ozone={ozone:3.2f}, aer={aer:2.2f}"
+        msg = f"run libradtran : idx= {idx:3d} irow={irow:3d}, am={am:2.2f}, pwv={pwv:2.2f}, ozone={ozone:3.2f}, aer={aer:2.2f}"
         if FLAG_VERBOSE:
             logger.info(msg)
         else:
@@ -315,7 +327,8 @@ if __name__ == "__main__":
         dataout[idx + 1, idx_cld] = cloudext
         dataout[idx + 1, idx_res:] = atm
 
-        idx += 1
+
+        idx += 1  # increase row number
 
 
     ################################################################################################################
