@@ -3,7 +3,7 @@
 - author : Sylvie Dagoret-Campagne
 - affiliation : IJCLab/IN2P3/CNRS
 - creation date : April 20th 2020
-- update : April 21th 2020
+- update : September  15th 2020
 
 
 Tools show how to do something
@@ -52,3 +52,11 @@ Simulate absorption profiles with libradtran
 -**ConvertImageToParquetTable.ipynb**: Convert directly into Parquet format (NOT IMPLEMENTED)
 
 -**ConvertSmallImageToOneBigImage.ipynb**: Convert into an image
+
+
+
+## Chain to simulate variable transparency:
+
+-**MakeAtmosphericTransparencyProd/**:
+
+Generate atmospheric parameters, call libradtran in a loop to simulate atmospheric transparency, tools to check output	
