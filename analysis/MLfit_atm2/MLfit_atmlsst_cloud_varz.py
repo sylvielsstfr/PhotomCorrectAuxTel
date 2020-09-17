@@ -1204,6 +1204,126 @@ if __name__ == "__main__":
         plt.show()
 
 
+    ##############
+    # Final fit
+    ###########
+
+
+    regr = linear_model.LinearRegression(fit_intercept=True)
+
+    if FLAG_SCALING:
+        regr.fit(X_train_scaled, Y_train_scaled)
+    else:
+        regr.fit(X_train, Y_train)
+
+        # calculate metric
+        # Make predictions using the testing set
+
+    if FLAG_SCALING:
+        Y_pred_test = regr.predict(X_test_scaled)
+        Y_pred_test_inv = scaler_Y.inverse_transform(Y_pred_test)
+        DY = Y_pred_test - Y_test_scaled
+    else:
+        Y_pred_test = regr.predict(X_test)
+        DY = Y_pred_test - Y_test
+
+    if FLAG_SCALING:
+        # The mean squared error
+        msg='Mean squared error: %.5f' % mean_squared_error(Y_test_scaled, Y_pred_test)
+        logger.info(msg)
+        # The coefficient of determination: 1 is perfect prediction
+        msg='Coefficient of determination: %.5f' % r2_score(Y_test_scaled, Y_pred_test)
+        logger.info(msg)
+        # Explained variance : 1 is perfect prediction
+        msg='Explained variance: %.5f' % explained_variance_score(Y_test_scaled, Y_pred_test)
+        logger.info(msg)
+
+    else:
+        # The mean squared error
+        msg='Mean squared error: %.5f' % mean_squared_error(Y_test, Y_pred_test)
+        logger.info(msg)
+        # The coefficient of determination: 1 is perfect prediction
+        msg='Coefficient of determination: %.5f' % r2_score(Y_test, Y_pred_test)
+        logger.info(msg)
+        # Explained variance : 1 is perfect prediction
+        msg='Explained variance: %.5f' % explained_variance_score(Y_test, Y_pred_test)
+        logger.info(msg)
+
+
+    if FLAG_PLOT:
+        fig = plt.figure(10,figsize=(9, 8))
+        ax = fig.add_subplot(221)
+        plot_param(0, ax, Y_test, Y_pred_test_inv, mode=0)
+
+        ax = fig.add_subplot(222)
+        plot_param(1, ax, Y_test, Y_pred_test_inv, mode=0)
+
+        ax = fig.add_subplot(223)
+        plot_param(2, ax, Y_test, Y_pred_test_inv, mode=0)
+
+        ax = fig.add_subplot(224)
+        plot_param(3, ax, Y_test, Y_pred_test_inv, mode=0)
+
+        plt.tight_layout()
+        plt.suptitle("Linear Regression - No reg (with cloud)", Y=1.1, fontsize=25)
+        plt.show()
+
+        fig = plt.figure(11,figsize=(9, 8))
+        ax = fig.add_subplot(221)
+        plot_param(0, ax, Y_test, Y_pred_test_inv, mode=1)
+
+        ax = fig.add_subplot(222)
+        plot_param(1, ax, Y_test, Y_pred_test_inv, mode=1)
+
+        ax = fig.add_subplot(223)
+        plot_param(2, ax, Y_test, Y_pred_test_inv, mode=1)
+
+        ax = fig.add_subplot(224)
+        plot_param(3, ax, Y_test, Y_pred_test_inv, mode=1)
+
+        plt.tight_layout()
+        plt.suptitle("Linear Regression - No reg (with cloud)", Y=1.1, fontsize=25)
+        plt.show()
+
+        fig = plt.figure(12,figsize=(9, 8))
+        ax = fig.add_subplot(221)
+        plot_param(0, ax, Y_test, Y_pred_test_inv, mode=2)
+
+        ax = fig.add_subplot(222)
+        plot_param(1, ax, Y_test, Y_pred_test_inv, mode=2)
+
+        ax = fig.add_subplot(223)
+        plot_param(2, ax, Y_test, Y_pred_test_inv, mode=2)
+
+        ax = fig.add_subplot(224)
+        plot_param(3, ax, Y_test, Y_pred_test_inv, mode=2)
+
+        plt.tight_layout()
+        plt.suptitle("Linear Regression - No reg (with cloud)", Y=1.1, fontsize=25)
+        plt.show()
+
+        fig = plt.figure(13,figsize=(9, 8))
+        ax = fig.add_subplot(221)
+        plot_param_histo(0, ax, Y_test, Y_pred_test_inv)
+
+        ax = fig.add_subplot(222)
+        plot_param_histo(1, ax, Y_test, Y_pred_test_inv)
+
+        ax = fig.add_subplot(223)
+        plot_param_histo(2, ax, Y_test, Y_pred_test_inv)
+
+        ax = fig.add_subplot(224)
+        plot_param_histo(3, ax, Y_test, Y_pred_test_inv)
+
+        plt.tight_layout()
+        plt.suptitle("Linear Regression - No reg (with cloud)", Y=1.1, fontsize=25)
+
+        plt.show()
+
+
+
+
+
 
 
 
