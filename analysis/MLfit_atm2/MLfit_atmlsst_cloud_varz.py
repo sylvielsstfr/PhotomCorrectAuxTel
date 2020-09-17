@@ -488,7 +488,7 @@ def plot_param_histo(iparam, ax, all_Yin, all_Yout, nsig=10):
     props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
 
     # place a text box in upper left in axes coords
-    ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14, verticalalignment='top', bbox=props)
+    ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=10, verticalalignment='top', bbox=props)
 
     ax.ticklabel_format(axis='x',
                         style='sci',
@@ -708,6 +708,126 @@ def GetAtmTransparency(inputdir, filelist):
 
     return wl, dataout, idx_num, idx_am, idx_vaod, idx_pwv, idx_o3, idx_cld, idx_res, headerin
 #-----------------------------------------------------------------------------------------------------------------------
+def plot_ml_result(Yin,Yout,mode,title):
+    """
+    plot_ml_result(Yin,Yout,mode,title)
+
+    :param Yin:
+    :param Yout:
+    :param mode:
+    :param title:
+    :return:
+    """
+
+    fig = plt.figure(figsize=(8.5, 7.5))
+    ax = fig.add_subplot(221)
+    plot_param(0, ax, Yin, Yout, mode)
+
+    ax = fig.add_subplot(222)
+    plot_param(1, ax,Yin, Yout, mode)
+
+    ax = fig.add_subplot(223)
+    plot_param(2, ax, Yin, Yout, mode)
+
+    ax = fig.add_subplot(224)
+    plot_param(3, ax, Yin, Yout, mode)
+
+    plt.tight_layout()
+    plt.suptitle(title, Y=1.02, fontsize=18)
+    plt.show()
+#--------------------------------------------
+
+def histo_ml_result(Yin, Yout, title):
+    """
+
+    :param Yin:
+    :param Yout:
+    :param mode:
+    :param title:
+    :return:
+    """
+
+    fig = plt.figure(figsize=(8.5, 7.5))
+    ax = fig.add_subplot(221)
+    plot_param_histo(0, ax, Yin, Yout)
+
+    ax = fig.add_subplot(222)
+    plot_param_histo(1, ax, Yin, Yout)
+
+    ax = fig.add_subplot(223)
+    plot_param_histo(2, ax, Yin, Yout)
+
+    ax = fig.add_subplot(224)
+    plot_param_histo(3, ax, Yin, Yout)
+
+    plt.tight_layout()
+    plt.suptitle(title, Y=1.02, fontsize=18)
+    plt.show()
+#---------------------------------------------
+
+def plot_regularisation_coeff(alphas,alpha0,allcoefs,title):
+    """
+
+    plot_regularisation_coeff(alpha,all_coeff,title) : plot coefficient vrt regularisation parameter
+
+    :param alphas: regularisation parameters
+    : param alpha0 : vertical line
+    :param allcoefs: coefficient
+    :param title: title
+    :return:
+    """
+
+    N = allcoefs.shape[2] # number of coefficients
+    jet = plt.get_cmap('jet')
+    cNorm = colors.Normalize(vmin=0, vmax=N)
+    scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+    all_colors = scalarMap.to_rgba(np.arange(N), alpha=1)
+
+    fig = plt.figure(figsize=(12, 8))
+
+    ax1 = fig.add_subplot(221)
+    for idx in np.arange(allcoefs.shape[2]):
+        ax1.plot(alphas, allcoefs[:, 0, idx], color=all_colors[idx])
+    ax1.set_xscale('log')
+    ax1.axvline(x=alpha0, color='red')
+    ax1.set_ylabel('weights - vaod')
+    ax1.set_xlim(ax1.get_xlim()[::-1])  # reverse axis
+    ax1.grid(True)
+    ax1.set_title(title)
+
+    ax2 = fig.add_subplot(222, sharex=ax1)
+    for idx in np.arange(allcoefs.shape[2]):
+        ax2.plot(alphas, allcoefs[:, 1, idx], color=all_colors[idx])
+    ax2.axvline(x=alpha0, color='red')
+    ax2.set_xscale('log')
+    ax2.set_ylabel('weights - H2O')
+    ax2.set_xlim(ax2.get_xlim()[::-1])  # reverse axis
+    ax2.grid(True)
+
+    ax3 = fig.add_subplot(223, sharex=ax1)
+    for idx in np.arange(allcoefs.shape[2]):
+        ax3.plot(alphas, allcoefs[:, 2, idx], color=all_colors[idx])
+    ax3.axvline(x=alpha0, color='red')
+    ax3.set_ylabel('weights - O3')
+    ax3.set_xscale('log')
+    ax3.set_xlim(ax3.get_xlim()[::-1])  # reverse axis
+    ax3.grid(True)
+
+    ax4 = fig.add_subplot(224, sharex=ax1)
+    for idx in np.arange(allcoefs.shape[2]):
+        ax4.plot(alphas, allcoefs[:, 3, idx], color=all_colors[idx])
+    ax4.axvline(x=alpha0, color='red')
+    ax4.set_ylabel('weights - CLD')
+    ax4.set_xscale('log')
+    # ax4.set_xlim(ax4.get_xlim()[::-1])  # reverse axis
+    ax4.set_xlim(ax4.get_xlim())  # reverse axis
+    ax4.grid(True)
+
+    plt.xlabel('alpha')
+    plt.axis('tight')
+
+    plt.tight_layout()
+    plt.show()
 
 
 #---------------------------------------------------------------------------------------------------------------------
@@ -1114,11 +1234,10 @@ if __name__ == "__main__":
         plt.show()
 
 
-    ##################################################
-    # Linear Regression
-    ##################################################
 
-    logger.info('4) Linear Regression, no regularisation')
+
+    # LEARNING CURVE
+
 
 
     nb_tot_test = len(Y_test)
@@ -1127,206 +1246,400 @@ if __name__ == "__main__":
     nsamples_test = np.arange(10, nb_tot_test, 100)
     nsamples_train = np.arange(10, nb_tot_train, 100)
 
-    all_MSE_train = np.zeros(len(nsamples_train))
-    all_MSE_test = np.zeros(len(nsamples_test))
-    all_MSE_test_full = np.zeros(len(nsamples_train))
+    if 'LINEARREGRESSION' in config_section:
+        FLAG_LINEARREGRESSION = bool(int(config['LINEARREGRESSION']['FLAG_LINEARREGRESSION']))
+        FLAG_LINEARREGRESSION_RIDGE = bool(int(config['LINEARREGRESSION']['FLAG_LINEARREGRESSION_RIDGE']))
+        FLAG_LINEARREGRESSION_LASSO = bool(int(config['LINEARREGRESSION']['FLAG_LINEARREGRESSION_LASSO']))
+    else:
+        msg = f"Configuration file : Missing section LINEARREGRESSION in config file {config_filename} !"
+        logger.error(msg)
+        sys.exit()
 
-    count = 0
-    for n in nsamples_train:
+
+
+
+
+
+
+
+    ##################################################
+    # Linear Regression
+    ##################################################
+
+    if FLAG_LINEARREGRESSION:
+
+
+        logger.info('4) Linear Regression, no regularisation')
+
+
+
+
+        all_MSE_train = np.zeros(len(nsamples_train))
+        all_MSE_test = np.zeros(len(nsamples_test))
+        all_MSE_test_full = np.zeros(len(nsamples_train))
+
+        count = 0
+        for n in nsamples_train:
+
+            regr = linear_model.LinearRegression(fit_intercept=True)
+
+            if FLAG_SCALING:
+                X_train_cut = np.copy(X_train_scaled[:n, :])
+                Y_train_cut = np.copy(Y_train_scaled[:n, :])
+                if n in nsamples_test:
+                    X_test_cut = np.copy(X_test_scaled[:n, :])
+                    Y_test_cut = np.copy(Y_test_scaled[:n, :])
+            else:
+                X_train_cut = X_train[:n, :]
+                Y_train_cut = Y_train[:n, :]
+                if n in nsamples_test:
+                    X_test_cut = X_test[:n, :]
+                    Y_test_cut = Y_test[:n, :]
+
+            # does the fit
+            regr.fit(X_train_cut, Y_train_cut)
+
+            # calculate metric
+            # Make predictions using the testing set
+            Y_pred_train = regr.predict(X_train_cut)
+            if n in nsamples_test:
+                Y_pred_test = regr.predict(X_test_cut)
+
+            if FLAG_SCALING:
+                Y_pred_test_full = regr.predict(np.copy(X_test_scaled))
+            else:
+                Y_pred_test_full = regr.predict(np.copy(X_test))
+
+            MSE_train = mean_squared_error(Y_train_cut, Y_pred_train)
+
+            if n in nsamples_test:
+                MSE_test = mean_squared_error(Y_test_cut, Y_pred_test)
+
+            if FLAG_SCALING:
+                MSE_test_full = mean_squared_error(Y_test_scaled, Y_pred_test_full)
+            else:
+                MSE_test_full = mean_squared_error(Y_test, Y_pred_test_full)
+
+            all_MSE_train[count] = MSE_train
+            all_MSE_test_full[count] = MSE_test_full
+
+            if n in nsamples_test:
+                all_MSE_test[count] = MSE_test
+
+            count += 1
+            # end of loop
+
+
+        if FLAG_PLOT:
+            fig = plt.figure(figsize=(12, 4))
+            ax = fig.add_subplot(111)
+            ax.plot(nsamples_train, all_MSE_train, 'b-o', label="train")
+            # ax.plot(nsamples_test, all_MSE_test,'r-o',label="test")
+            ax.plot(nsamples_train, all_MSE_test_full, 'r:o', label="test")
+            ax.legend()
+            ax.set_yscale("log")
+            ax.set_xlabel("$N$")
+            ax.set_ylabel("MSE")
+            ax.set_title("Linear Regression - No reg : MSE with test vs N")
+            ax.grid()
+            # ax.set_ylim(1e-6,1e-2)
+            ax1 = ax.twinx()
+            ax1.set_ylim(ax.get_ylim())
+            ax1.set_yscale("log")
+            ax1.grid()
+            plt.tight_layout()
+            plt.show()
+
+
+        ##############
+        # Final fit
+        #############
+
 
         regr = linear_model.LinearRegression(fit_intercept=True)
 
         if FLAG_SCALING:
-            X_train_cut = np.copy(X_train_scaled[:n, :])
-            Y_train_cut = np.copy(Y_train_scaled[:n, :])
-            if n in nsamples_test:
-                X_test_cut = np.copy(X_test_scaled[:n, :])
-                Y_test_cut = np.copy(Y_test_scaled[:n, :])
+            regr.fit(X_train_scaled, Y_train_scaled)
         else:
-            X_train_cut = X_train[:n, :]
-            Y_train_cut = Y_train[:n, :]
-            if n in nsamples_test:
-                X_test_cut = X_test[:n, :]
-                Y_test_cut = Y_test[:n, :]
-
-                # does the fit
-        regr.fit(X_train_cut, Y_train_cut)
-
-        # calculate metric
-        # Make predictions using the testing set
-        Y_pred_train = regr.predict(X_train_cut)
-        if n in nsamples_test:
-            Y_pred_test = regr.predict(X_test_cut)
-
-        if FLAG_SCALING:
-            Y_pred_test_full = regr.predict(np.copy(X_test_scaled))
-        else:
-            Y_pred_test_full = regr.predict(np.copy(X_test))
-
-        MSE_train = mean_squared_error(Y_train_cut, Y_pred_train)
-
-        if n in nsamples_test:
-            MSE_test = mean_squared_error(Y_test_cut, Y_pred_test)
-
-        if FLAG_SCALING:
-            MSE_test_full = mean_squared_error(Y_test_scaled, Y_pred_test_full)
-        else:
-            MSE_test_full = mean_squared_error(Y_test, Y_pred_test_full)
-
-        all_MSE_train[count] = MSE_train
-        all_MSE_test_full[count] = MSE_test_full
-
-        if n in nsamples_test:
-            all_MSE_test[count] = MSE_test
-
-        count += 1
-        # end of loop
-
-
-    if FLAG_PLOT:
-        fig = plt.figure(figsize=(12, 4))
-        ax = fig.add_subplot(111)
-        ax.plot(nsamples_train, all_MSE_train, 'b-o', label="train")
-        # ax.plot(nsamples_test, all_MSE_test,'r-o',label="test")
-        ax.plot(nsamples_train, all_MSE_test_full, 'r:o', label="test")
-        ax.legend()
-        ax.set_yscale("log")
-        ax.set_xlabel("$N$")
-        ax.set_ylabel("MSE")
-        ax.set_title("Linear Regression - No reg : MSE with test vs N")
-        ax.grid()
-        # ax.set_ylim(1e-6,1e-2)
-        ax1 = ax.twinx()
-        ax1.set_ylim(ax.get_ylim())
-        ax1.set_yscale("log")
-        ax1.grid()
-        plt.tight_layout()
-        plt.show()
-
-
-    ##############
-    # Final fit
-    ###########
-
-
-    regr = linear_model.LinearRegression(fit_intercept=True)
-
-    if FLAG_SCALING:
-        regr.fit(X_train_scaled, Y_train_scaled)
-    else:
-        regr.fit(X_train, Y_train)
+            regr.fit(X_train, Y_train)
 
         # calculate metric
         # Make predictions using the testing set
 
-    if FLAG_SCALING:
-        Y_pred_test = regr.predict(X_test_scaled)
-        Y_pred_test_inv = scaler_Y.inverse_transform(Y_pred_test)
-        DY = Y_pred_test - Y_test_scaled
-    else:
-        Y_pred_test = regr.predict(X_test)
-        DY = Y_pred_test - Y_test
+        if FLAG_SCALING:
+            Y_pred_test = regr.predict(X_test_scaled)
+            Y_pred_test_inv = scaler_Y.inverse_transform(Y_pred_test)
+            DY = Y_pred_test - Y_test_scaled
+        else:
+            Y_pred_test = regr.predict(X_test)
+            DY = Y_pred_test - Y_test
 
-    if FLAG_SCALING:
-        # The mean squared error
-        msg='Mean squared error: %.5f' % mean_squared_error(Y_test_scaled, Y_pred_test)
-        logger.info(msg)
-        # The coefficient of determination: 1 is perfect prediction
-        msg='Coefficient of determination: %.5f' % r2_score(Y_test_scaled, Y_pred_test)
-        logger.info(msg)
-        # Explained variance : 1 is perfect prediction
-        msg='Explained variance: %.5f' % explained_variance_score(Y_test_scaled, Y_pred_test)
-        logger.info(msg)
+        if FLAG_SCALING:
+            # The mean squared error
+            msg='Mean squared error: %.5f' % mean_squared_error(Y_test_scaled, Y_pred_test)
+            logger.info(msg)
+            # The coefficient of determination: 1 is perfect prediction
+            msg='Coefficient of determination: %.5f' % r2_score(Y_test_scaled, Y_pred_test)
+            logger.info(msg)
+            # Explained variance : 1 is perfect prediction
+            msg='Explained variance: %.5f' % explained_variance_score(Y_test_scaled, Y_pred_test)
+            logger.info(msg)
 
-    else:
-        # The mean squared error
-        msg='Mean squared error: %.5f' % mean_squared_error(Y_test, Y_pred_test)
-        logger.info(msg)
-        # The coefficient of determination: 1 is perfect prediction
-        msg='Coefficient of determination: %.5f' % r2_score(Y_test, Y_pred_test)
-        logger.info(msg)
-        # Explained variance : 1 is perfect prediction
-        msg='Explained variance: %.5f' % explained_variance_score(Y_test, Y_pred_test)
-        logger.info(msg)
-
-
-    if FLAG_PLOT:
-        fig = plt.figure(10,figsize=(9, 8))
-        ax = fig.add_subplot(221)
-        plot_param(0, ax, Y_test, Y_pred_test_inv, mode=0)
-
-        ax = fig.add_subplot(222)
-        plot_param(1, ax, Y_test, Y_pred_test_inv, mode=0)
-
-        ax = fig.add_subplot(223)
-        plot_param(2, ax, Y_test, Y_pred_test_inv, mode=0)
-
-        ax = fig.add_subplot(224)
-        plot_param(3, ax, Y_test, Y_pred_test_inv, mode=0)
-
-        plt.tight_layout()
-        plt.suptitle("Linear Regression - No reg (with cloud)", Y=1.1, fontsize=25)
-        plt.show()
-
-        fig = plt.figure(11,figsize=(9, 8))
-        ax = fig.add_subplot(221)
-        plot_param(0, ax, Y_test, Y_pred_test_inv, mode=1)
-
-        ax = fig.add_subplot(222)
-        plot_param(1, ax, Y_test, Y_pred_test_inv, mode=1)
-
-        ax = fig.add_subplot(223)
-        plot_param(2, ax, Y_test, Y_pred_test_inv, mode=1)
-
-        ax = fig.add_subplot(224)
-        plot_param(3, ax, Y_test, Y_pred_test_inv, mode=1)
-
-        plt.tight_layout()
-        plt.suptitle("Linear Regression - No reg (with cloud)", Y=1.1, fontsize=25)
-        plt.show()
-
-        fig = plt.figure(12,figsize=(9, 8))
-        ax = fig.add_subplot(221)
-        plot_param(0, ax, Y_test, Y_pred_test_inv, mode=2)
-
-        ax = fig.add_subplot(222)
-        plot_param(1, ax, Y_test, Y_pred_test_inv, mode=2)
-
-        ax = fig.add_subplot(223)
-        plot_param(2, ax, Y_test, Y_pred_test_inv, mode=2)
-
-        ax = fig.add_subplot(224)
-        plot_param(3, ax, Y_test, Y_pred_test_inv, mode=2)
-
-        plt.tight_layout()
-        plt.suptitle("Linear Regression - No reg (with cloud)", Y=1.1, fontsize=25)
-        plt.show()
-
-        fig = plt.figure(13,figsize=(9, 8))
-        ax = fig.add_subplot(221)
-        plot_param_histo(0, ax, Y_test, Y_pred_test_inv)
-
-        ax = fig.add_subplot(222)
-        plot_param_histo(1, ax, Y_test, Y_pred_test_inv)
-
-        ax = fig.add_subplot(223)
-        plot_param_histo(2, ax, Y_test, Y_pred_test_inv)
-
-        ax = fig.add_subplot(224)
-        plot_param_histo(3, ax, Y_test, Y_pred_test_inv)
-
-        plt.tight_layout()
-        plt.suptitle("Linear Regression - No reg (with cloud)", Y=1.1, fontsize=25)
-
-        plt.show()
+        else:
+            # The mean squared error
+            msg='Mean squared error: %.5f' % mean_squared_error(Y_test, Y_pred_test)
+            logger.info(msg)
+            # The coefficient of determination: 1 is perfect prediction
+            msg='Coefficient of determination: %.5f' % r2_score(Y_test, Y_pred_test)
+            logger.info(msg)
+            # Explained variance : 1 is perfect prediction
+            msg='Explained variance: %.5f' % explained_variance_score(Y_test, Y_pred_test)
+            logger.info(msg)
 
 
 
+        if FLAG_PLOT:
+            plot_ml_result(Y_test, Y_pred_test_inv, mode=0, title="Linear Regression - No reg (with cloud)")
+            plot_ml_result(Y_test, Y_pred_test_inv, mode=1, title="Linear Regression - No reg (with cloud)")
+            plot_ml_result(Y_test, Y_pred_test_inv, mode=2, title="Linear Regression - No reg (with cloud)")
+            #plot_ml_result(Y_test, Y_pred_test_inv, mode=3, title="Linear Regression - No reg (with cloud)")
+
+            histo_ml_result(Y_test, Y_pred_test_inv, title="Linear Regression - No reg (with cloud)")
 
 
+        if FLAG_PLOT:
+            fig = plt.figure(figsize=(12, 4))
+            ax = fig.add_subplot(121)
+            plotcorrelation(ax, Y_test)
+            ax.set_title("atmospheric param at input")
+            ax = fig.add_subplot(122)
+            plotcorrelation(ax, Y_pred_test_inv)
+            ax.set_title("atmospheric param at output")
+            plt.tight_layout()
+            plt.suptitle("Linear Regression - No reg (with cloud)", Y=1.02, fontsize=18)
+            plt.show()
 
 
+    if FLAG_LINEARREGRESSION_RIDGE:
+        logger.info('5) Linear Regression, Ridge regularisation')
 
 
+        ##############################################################################
+        # Compute paths
+
+        n_alphas = 200
+        alphas = np.logspace(-10, -1, n_alphas)
+        all_MSE = []
+
+        coefs = []
+        for a in alphas:
+            ridge = linear_model.Ridge(alpha=a, fit_intercept=True)
+
+            if FLAG_SCALING:
+
+                ridge.fit(X_train_scaled, Y_train_scaled)
+                coefs.append(ridge.coef_)
+
+                # calculate metric
+                # Make predictions using the testing set
+                Y_pred = ridge.predict(X_val_scaled)
+                MSE = mean_squared_error(Y_val_scaled, Y_pred)
+            else:
+                ridge.fit(X_train, Y_train)
+                coefs.append(ridge.coef_)
+
+                # calculate metric
+                # Make predictions using the testing set
+                Y_pred = ridge.predict(X_val)
+                MSE = mean_squared_error(Y_val, Y_pred)
+
+            # book MSE result
+            all_MSE.append(MSE)
+
+        allcoefs = np.array(coefs)
+        alphas = np.array(alphas)
+        all_MSE = np.array(all_MSE)
+
+        idx_min = np.where(all_MSE == all_MSE.min())[0][0]
+        alpha_ridge_min = alphas[idx_min]
 
 
+        if FLAG_PLOT:
+            fig = plt.figure(figsize=(10, 4))
+            ax = fig.add_subplot(111)
+            ax.plot(alphas, all_MSE, 'b-o')
+            ax.set_xscale("log")
+            alpha_ridge = alphas[idx_min]
+            ax.axvline(x=alpha_ridge, color='red')
+            ax.set_xlabel("$\\alpha$")
+            ax.set_ylabel("MSE")
+            ax.set_title("Ridge : MSE with validation test")
+            ax.grid()
+            ax1 = ax.twinx()
+            ax1.set_ylim(ax.get_ylim())
+            ax1.grid()
+            plt.show()
+
+            fig = plt.figure(figsize=(10, 4))
+            ax = fig.add_subplot(111)
+            ax.plot(alphas, all_MSE, 'b-')
+            ax.set_xscale('log')
+            ax.axvline(x=alpha_ridge, color='red')
+            ax.grid()
+            # ax.set_yscale('log')
+            ax.set_xlim(ax.get_xlim()[::-1])  # reverse axis
+            ax.set_xlabel("$\\alpha$")
+            ax.set_ylabel("MSE")
+            ax.set_title("Ridge : MSE with validation test")
+            ax1 = ax.twinx()
+            ax1.set_ylim(ax.get_ylim())
+            ax1.grid()
+            plt.show()
+
+        # plot coefficients wrt regularisation parameter alpha
+        if FLAG_PLOT:
+            plot_regularisation_coeff(alphas, alpha_ridge_min, allcoefs, title='Ridge coefficients as a function of the regularization')
+
+
+        # learning curve for ridge
+
+        all_MSE_train = np.zeros(len(nsamples_train))
+        all_MSE_test = np.zeros(len(nsamples_test))
+        all_MSE_test_full = np.zeros(len(nsamples_train))
+
+        count = 0
+        for n in nsamples_train:
+
+            ridge = linear_model.Ridge(alpha=alpha_ridge_min, fit_intercept=True)
+
+            if FLAG_SCALING:
+                X_train_cut = np.copy(X_train_scaled[:n, :])
+                Y_train_cut = np.copy(Y_train_scaled[:n, :])
+                if n in nsamples_test:
+                    X_test_cut = np.copy(X_test_scaled[:n, :])
+                    Y_test_cut = np.copy(Y_test_scaled[:n, :])
+            else:
+                X_train_cut = X_train[:n, :]
+                Y_train_cut = Y_train[:n, :]
+                if n in nsamples_test:
+                    X_test_cut = X_test[:n, :]
+                    Y_test_cut = Y_test[:n, :]
+
+            ridge.fit(X_train_cut, Y_train_cut)
+
+            # calculate metric
+            # Make predictions using the testing set
+            Y_pred_train = ridge.predict(X_train_cut)
+
+            if FLAG_SCALING:
+                Y_pred_test_full = ridge.predict(X_test_scaled)
+            else:
+                Y_pred_test_full = ridge.predict(X_test)
+
+            if n in nsamples_test:
+                Y_pred_test = ridge.predict(X_test_cut)
+
+            MSE_train = mean_squared_error(Y_train_cut, Y_pred_train)
+
+            if FLAG_SCALING:
+                MSE_test_full = mean_squared_error(Y_test_scaled, Y_pred_test_full)
+            else:
+                MSE_test_full = mean_squared_error(Y_test, Y_pred_test_full)
+
+            if n in nsamples_test:
+                MSE_test = mean_squared_error(Y_test_cut, Y_pred_test)
+
+            all_MSE_train[count] = MSE_train
+            all_MSE_test_full[count] = MSE_test_full
+
+            if n in nsamples_test:
+                all_MSE_test[count] = MSE_test
+
+            count += 1
+            # end of loop
+
+
+        #Plot learning curve
+        if FLAG_PLOT:
+            fig = plt.figure(figsize=(15, 5))
+            ax = fig.add_subplot(111)
+            ax.plot(nsamples_train, all_MSE_train, 'b-o', label="train")
+            # ax.plot(nsamples_test, all_MSE_test,'r-o',label="test")
+            ax.plot(nsamples_train, all_MSE_test_full, 'r-o', label="test")
+            ax.legend()
+            ax.set_yscale("log")
+            ax.set_xlabel("$N$")
+            ax.set_ylabel("MSE")
+            ax.set_title("RIDGE : MSE with test vs N")
+            ax.grid()
+            # ax.set_ylim(1e-6,1e-2)
+            ax1 = ax.twinx()
+            ax1.set_ylim(ax.get_ylim())
+            ax1.set_yscale("log")
+            ax1.grid()
+            plt.show()
+
+        ## Final fit for ridge
+
+
+        ridge = linear_model.Ridge(alpha=alpha_ridge_min, fit_intercept=True)
+
+        if FLAG_SCALING:
+            ridge.fit(X_train_scaled, Y_train_scaled)
+        else:
+            ridge.fit(X_train, Y_train)
+
+            # calculate metric
+            # Make predictions using the testing set
+
+        if FLAG_SCALING:
+            Y_pred_test = ridge.predict(X_test_scaled)
+            Y_pred_test_inv = scaler_Y.inverse_transform(Y_pred_test)
+            DY = Y_pred_test - Y_test_scaled
+        else:
+            Y_pred_test = ridge.predict(X_test)
+            DY = Y_pred_test - Y_test
+
+        if FLAG_SCALING:
+            # The mean squared error
+            msg='Mean squared error: %.5f' % mean_squared_error(Y_test_scaled, Y_pred_test)
+            logger.info(msg)
+            # The coefficient of determination: 1 is perfect prediction
+            msg='Coefficient of determination: %.5f' % r2_score(Y_test_scaled, Y_pred_test)
+            logger.info(msg)
+            # Explained variance : 1 is perfect prediction
+            msg='Explained variance: %.5f' % explained_variance_score(Y_test_scaled, Y_pred_test)
+            logger.info(msg)
+
+        else:
+            # The mean squared error
+            msg='Mean squared error: %.5f' % mean_squared_error(Y_test, Y_pred_test)
+            logger.info(msg)
+            # The coefficient of determination: 1 is perfect prediction
+            msg='Coefficient of determination: %.5f' % r2_score(Y_test, Y_pred_test)
+            logger.info(msg)
+            # Explained variance : 1 is perfect prediction
+            msg='Explained variance: %.5f' % explained_variance_score(Y_test, Y_pred_test)
+            logger.info(msg)
+
+
+        if FLAG_PLOT:
+            plot_ml_result(Y_test, Y_pred_test_inv, mode=0, title="Linear Regression - Ridge reg (with cloud)")
+            plot_ml_result(Y_test, Y_pred_test_inv, mode=1, title="Linear Regression - Ridge reg (with cloud)")
+            plot_ml_result(Y_test, Y_pred_test_inv, mode=2, title="Linear Regression - Ridge reg (with cloud)")
+            #plot_ml_result(Y_test, Y_pred_test_inv, mode=3, title="Linear Regression - Ridge reg (with cloud)")
+
+            histo_ml_result(Y_test, Y_pred_test_inv, title="Linear Regression - Ridge reg (with cloud)")
+
+
+        if FLAG_PLOT:
+            fig = plt.figure(figsize=(12, 4))
+            ax = fig.add_subplot(121)
+            plotcorrelation(ax, Y_test)
+            ax.set_title("atmospheric param at input")
+            ax = fig.add_subplot(122)
+            plotcorrelation(ax, Y_pred_test_inv)
+            ax.set_title("atmospheric param at output")
+            plt.tight_layout()
+            plt.suptitle("Linear Regression - Ridge reg (with cloud)", Y=1.02, fontsize=18)
+            plt.show()
