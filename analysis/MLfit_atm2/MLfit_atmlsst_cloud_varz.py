@@ -82,6 +82,13 @@ import argparse
 # for configuration
 import configparser
 
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn import linear_model
+from sklearn.metrics import mean_squared_error, r2_score,explained_variance_score
+
+
 ################################################################
 # Constants
 #################################################################
@@ -885,6 +892,8 @@ if __name__ == "__main__":
 
     transm = transm_tot
 
+    NWL = wl.shape[0]
+
     # plot transmission
     if FLAG_PLOT:
         N = 20
@@ -917,7 +926,282 @@ if __name__ == "__main__":
     #transm = transm_tot / att_rayleigh
 
 
+    # Create target arrays
+    #----------------------
 
+    airmassarr = airmass[:, np.newaxis]
+    vaodarr = vaod[:, np.newaxis]
+    pwvarr = pwv[:, np.newaxis]
+    o3arr = ozone[:, np.newaxis]
+    cldarr = cld[:, np.newaxis]
+
+
+    # Create cloud array
+    #-------------------
+
+    transm_cloud = np.exp(-cld * airmass)
+    transm_cloud_arr = np.exp(-cldarr * airmassarr)
+
+    if FLAG_PLOT:
+        fig = plt.figure(figsize=(8, 4))
+
+        ax = fig.add_subplot(111)
+        ax.hist(cld, bins=50, facecolor="b", label="in data", alpha=0.5)
+        ax.set_yscale('log')
+        ax.set_xlabel("cloud optical depth ")
+        ax.grid()
+        plt.tight_layout()
+        plt.show()
+
+
+    ##################
+    # Prepare Y
+    #################
+    Y = np.concatenate((vaodarr, pwvarr, o3arr, cldarr), axis=1)
+
+
+    # SED
+    #-----
+    t = GetListOfCalspec()
+    t_sel = SelectFewSED(t)
+
+    if FLAG_PLOT:
+        fig = plt.figure(figsize=(8, 4))
+        ax = fig.add_subplot(111)
+        plot_sed(t_sel, ax)
+        plt.show()
+
+
+    # Retreive the SED
+    idx_sed_sel = 3
+    sed_filename = t_sel[idx_sed_sel]["FILES"]
+    sed_objname = t_sel[idx_sed_sel]["OBJNAME"]
+    sed_fullfilename = os.path.join(path_sed_calspec, sed_filename)
+
+
+    # case of flat
+    if sed_filename == "flat":
+        flatsp = S.FlatSpectrum(10, fluxunits='photlam')
+        spec = flatsp
+    else:
+        spec = S.FileSpectrum(sed_fullfilename)
+
+
+    # renormalisation and conversion to photlam
+    spec_norm = spec.renorm(10, 'vegamag', S.ObsBandpass('johnson,v'))
+    spec_norm.convert('photlam')
+
+
+
+    order2 = True
+    if order2:
+        specarrayfile = "spec_" + sed_objname + "_ord12.npy"
+        specarrayfile2 = "spec2_" + sed_objname + "_ord2.npy"
+        title_spec1 = "spectra order 1 and 2"
+        title_spec2 = "spectra order 2"
+    else:
+        specarrayfile = "spec_" + sed_objname + "_ord1.npy"
+        specarrayfile2 = "spec2_" + sed_objname + "_ord2.npy"
+        title_spec1 = "spectra order 1"
+        title_spec2 = "spectra order 2"
+
+
+
+
+    # Get Spectra unless already save in files
+    if not os.path.isfile(specarrayfile) or not os.path.isfile(specarrayfile2):
+        spectra, spectra2 = GetSpectra(sed=spec_norm, wl_atm=wl, atm_transmission=transm, order2=order2)
+        np.save(specarrayfile, spectra)
+        np.save(specarrayfile2, spectra2)
+    else:
+        spectra = np.load(specarrayfile)
+        spectra2 = np.load(specarrayfile2)
+
+    if FLAG_PLOT:
+
+        N = 20
+        jet = plt.get_cmap('jet')
+        cNorm = colors.Normalize(vmin=0, vmax=N)
+        scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+        all_colors = scalarMap.to_rgba(np.arange(N), alpha=1)
+
+        themax = 0
+        themin = 0
+
+        fig = plt.figure(figsize=(10, 4))
+        ax = fig.add_subplot(121)
+        for idx in np.arange(N):
+            if spectra[idx, :].max() > themax:
+                themax = spectra[idx, :].max()
+            ax.plot(wl, spectra[idx, :], color=all_colors[idx])
+        ax.set_ylim(0, 1.1 * themax)
+        ax.grid()
+        ax.set_xlabel("$\lambda$ (nm)")
+        ax.set_title(title_spec1)
+
+        ax = fig.add_subplot(122)
+        for idx in np.arange(N):
+            ax.plot(wl, spectra2[idx, :], color=all_colors[idx])
+        ax.set_xlabel("$\lambda$ (nm)")
+        ax.set_ylim(0, 1.1 * themax)
+        ax.set_title(title_spec2)
+        ax.grid()
+    plt.tight_layout()
+    plt.show()
+
+    ##############################
+    ##   X
+    ##############################
+    X = -2.5 * np.log10(spectra * transm_cloud_arr) / airmassarr
+
+    if FLAG_PLOT:
+        N = 50
+        jet = plt.get_cmap('jet')
+        cNorm = colors.Normalize(vmin=0, vmax=N)
+        scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+        all_colors = scalarMap.to_rgba(np.arange(N), alpha=1)
+
+        fig = plt.figure(figsize=(10, 4))
+        ax = fig.add_subplot(111)
+        for idx in np.arange(N):
+            ax.plot(wl, X[idx, :], color=all_colors[idx])
+        ax.set_xlabel("$\lambda$ (nm)")
+        ax.set_ylabel("mag")
+        ax.set_title("Observed spectra with cloud")
+        ax.grid()
+        ax1 = ax.twinx()
+        ax1.set_ylim(ax.get_ylim())
+        plt.tight_layout()
+        plt.show()
+
+
+
+    #################################################################################################################
+    # 3) Machine Learning
+    #################################################################################################################
+    logger.info('3) Machine Learning')
+
+
+    # splitting in trainning and validation and test
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.4, random_state=42)
+    X_val, X_test, Y_val, Y_test = train_test_split(X_test, Y_test, test_size=0.5, random_state=42)
+
+    FLAG_SCALING = True
+
+    # scaling
+    scaler_X = StandardScaler()
+    scaler_Y = StandardScaler()
+
+    # scale
+    scaler_X.fit(X_train)
+    scaler_Y.fit(Y_train)
+
+    # transform
+    X_train_scaled = scaler_X.transform(X_train)
+    Y_train_scaled = scaler_Y.transform(Y_train)
+    X_val_scaled = scaler_X.transform(X_val)
+    Y_val_scaled = scaler_Y.transform(Y_val)
+    X_test_scaled = scaler_X.transform(X_test)
+    Y_test_scaled = scaler_Y.transform(Y_test)
+
+    if FLAG_PLOT:
+        fig = plt.figure(figsize=(8, 4))
+        ax = fig.add_subplot(111)
+        ax.hist(np.concatenate((Y_train_scaled, Y_val_scaled, Y_test_scaled), axis=0), bins=50)
+        ax.set_title("Renormalised target (VAOD, O3, PWV,CLD)")
+        ax.grid()
+        plt.tight_layout()
+        plt.show()
+
+
+    ##################################################
+    # Linear Regression
+    ##################################################
+
+    logger.info('4) Linear Regression, no regularisation')
+
+
+    nb_tot_test = len(Y_test)
+    nb_tot_train = len(Y_train)
+
+    nsamples_test = np.arange(10, nb_tot_test, 100)
+    nsamples_train = np.arange(10, nb_tot_train, 100)
+
+    all_MSE_train = np.zeros(len(nsamples_train))
+    all_MSE_test = np.zeros(len(nsamples_test))
+    all_MSE_test_full = np.zeros(len(nsamples_train))
+
+    count = 0
+    for n in nsamples_train:
+
+        regr = linear_model.LinearRegression(fit_intercept=True)
+
+        if FLAG_SCALING:
+            X_train_cut = np.copy(X_train_scaled[:n, :])
+            Y_train_cut = np.copy(Y_train_scaled[:n, :])
+            if n in nsamples_test:
+                X_test_cut = np.copy(X_test_scaled[:n, :])
+                Y_test_cut = np.copy(Y_test_scaled[:n, :])
+        else:
+            X_train_cut = X_train[:n, :]
+            Y_train_cut = Y_train[:n, :]
+            if n in nsamples_test:
+                X_test_cut = X_test[:n, :]
+                Y_test_cut = Y_test[:n, :]
+
+                # does the fit
+        regr.fit(X_train_cut, Y_train_cut)
+
+        # calculate metric
+        # Make predictions using the testing set
+        Y_pred_train = regr.predict(X_train_cut)
+        if n in nsamples_test:
+            Y_pred_test = regr.predict(X_test_cut)
+
+        if FLAG_SCALING:
+            Y_pred_test_full = regr.predict(np.copy(X_test_scaled))
+        else:
+            Y_pred_test_full = regr.predict(np.copy(X_test))
+
+        MSE_train = mean_squared_error(Y_train_cut, Y_pred_train)
+
+        if n in nsamples_test:
+            MSE_test = mean_squared_error(Y_test_cut, Y_pred_test)
+
+        if FLAG_SCALING:
+            MSE_test_full = mean_squared_error(Y_test_scaled, Y_pred_test_full)
+        else:
+            MSE_test_full = mean_squared_error(Y_test, Y_pred_test_full)
+
+        all_MSE_train[count] = MSE_train
+        all_MSE_test_full[count] = MSE_test_full
+
+        if n in nsamples_test:
+            all_MSE_test[count] = MSE_test
+
+        count += 1
+        # end of loop
+
+
+    if FLAG_PLOT:
+        fig = plt.figure(figsize=(12, 4))
+        ax = fig.add_subplot(111)
+        ax.plot(nsamples_train, all_MSE_train, 'b-o', label="train")
+        # ax.plot(nsamples_test, all_MSE_test,'r-o',label="test")
+        ax.plot(nsamples_train, all_MSE_test_full, 'r:o', label="test")
+        ax.legend()
+        ax.set_yscale("log")
+        ax.set_xlabel("$N$")
+        ax.set_ylabel("MSE")
+        ax.set_title("Linear Regression - No reg : MSE with test vs N")
+        ax.grid()
+        # ax.set_ylim(1e-6,1e-2)
+        ax1 = ax.twinx()
+        ax1.set_ylim(ax.get_ylim())
+        ax1.set_yscale("log")
+        ax1.grid()
+        plt.tight_layout()
+        plt.show()
 
 
 

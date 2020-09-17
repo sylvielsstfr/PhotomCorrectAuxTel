@@ -6,7 +6,8 @@
 #    update        : September 11th 2020
 #
 # run :
-#       >python simulateatmtransparency.py --config config/default.ini -n0
+#       >python simulateatmtransparency.py --config config/default.ini -n 1
+#     -n 1 process packet number n=1
 #
 ###################################################################################################################
 
