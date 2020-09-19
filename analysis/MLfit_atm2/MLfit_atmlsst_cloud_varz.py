@@ -1195,6 +1195,43 @@ if __name__ == "__main__":
         plt.show()
 
 
+    ##################################################################################################################
+    #  Correlation coefficient
+    ############################################################################################################
+    if FLAG_PLOT:
+
+        fig = plt.figure(figsize=(12, 6))
+        ax = fig.add_subplot(111)
+
+        Ny = Y.shape[1]
+        Nx = X.shape[1]
+
+        N = Ny
+        jet = plt.get_cmap('jet')
+        cNorm = colors.Normalize(vmin=0, vmax=N)
+        scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+        all_colors = scalarMap.to_rgba(np.arange(N), alpha=1)
+
+        corr = np.zeros((Ny, Nx))
+
+        for iy in np.arange(Ny):
+            y = Y[:, iy]
+
+            for ix in np.arange(Nx):
+                x = X[:, ix]
+                R = np.corrcoef(x=x, y=y, rowvar=False)
+                corr[iy, ix] = R[0, 1]
+
+            ax.plot(wl, corr[iy, :], color=all_colors[iy], label=Ylabel[iy])
+
+        ax.legend()
+        ax.set_xlabel("$\lambda$  (nm)")
+        ax.set_ylabel("Correlation")
+        ax.set_title("ML : Correlation coefficient Y - X")
+        ax.grid()
+        plt.show()
+
+
 
     #################################################################################################################
     # 3) Machine Learning
