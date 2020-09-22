@@ -1078,6 +1078,7 @@ if __name__ == "__main__":
     # Prepare Y
     #################
     Y = np.concatenate((vaodarr, pwvarr, o3arr, cldarr), axis=1)
+    Ylabel = ["vaod", "pwv", "ozone", "cld"]
 
 
     # SED
@@ -1229,6 +1230,7 @@ if __name__ == "__main__":
         ax.set_ylabel("Correlation")
         ax.set_title("ML : Correlation coefficient Y - X")
         ax.grid()
+        ax.set_ylim(0,1.)
         plt.show()
 
 
