@@ -262,7 +262,7 @@ def plot_sed(t, ax):
 #------------------------------------------------------------------------------------------------------------------
 # Function to build the observed spectra
 #------------------------------------------------------------------------------------------------------------------
-def GetSpectra(sed, wl_atm, atm_transmission, order2=False):
+def GetSpectra(sed, wl_atm, atm_transmission, order2=False,cut=False):
     """
 
     GetSpectra(sed, wl_atm, atm_transmission, order2=False) : compute a series of observed spectra from
@@ -331,7 +331,11 @@ def GetSpectra(sed, wl_atm, atm_transmission, order2=False):
         func_order2 = interpolate.interp1d(2 * obs2.binwave, obs2.binflux / 2, bounds_error=False, fill_value=(0, 0))
         spectra2[i_atm, :] = func_order2(wl_atm_ang)
 
-        # add order 1 + order 2
+    if cut:
+        wlcut_indexes = np.where(wl_atm_ang < 7600)[0]
+        spectra2[:, wlcut_indexes] = 0
+
+    # add order 1 + order 2
     if order2:
         spectra = spectra + spectra2
 
