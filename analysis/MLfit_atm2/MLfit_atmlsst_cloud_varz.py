@@ -1117,13 +1117,21 @@ if __name__ == "__main__":
     spec_norm.convert('photlam')
 
 
-
+    #################
     order2 = True
-    if order2:
+    cut    = True
+    ################
+    if order2 and not cut:
         specarrayfile = "spec_" + sed_objname + "_ord12.npy"
         specarrayfile2 = "spec2_" + sed_objname + "_ord2.npy"
         title_spec1 = "spectra order 1 and 2"
         title_spec2 = "spectra order 2"
+    elif order2 and cut:
+        specarrayfile = "speccut_" + sed_objname + "_ord12.npy"
+        specarrayfile2 = "spec2cut_" + sed_objname + "_ord2.npy"
+        title_spec1 = "spectra order 1 and 2"
+        title_spec2 = "spectra order 2"
+
     else:
         specarrayfile = "spec_" + sed_objname + "_ord1.npy"
         specarrayfile2 = "spec2_" + sed_objname + "_ord2.npy"
@@ -1135,7 +1143,7 @@ if __name__ == "__main__":
 
     # Get Spectra unless already save in files
     if not os.path.isfile(specarrayfile) or not os.path.isfile(specarrayfile2):
-        spectra, spectra2 = GetSpectra(sed=spec_norm, wl_atm=wl, atm_transmission=transm, order2=order2)
+        spectra, spectra2 = GetSpectra(sed=spec_norm, wl_atm=wl, atm_transmission=transm, order2=order2,cut=cut)
         np.save(specarrayfile, spectra)
         np.save(specarrayfile2, spectra2)
     else:
