@@ -41,6 +41,8 @@ from scipy import interpolate
 # pysynphot
 import pysynphot as S
 pysynphot_root_path=os.environ['PYSYN_CDBS']
+S.refs.setref(area=1)
+S.refs.getref()
 #pysynphot_root_path="/Users/dagoret/MacOSX/External/PySynPhotData/grp/hst/cdbs"
 path_sed_calspec=os.path.join(pysynphot_root_path,'calspec')
 
