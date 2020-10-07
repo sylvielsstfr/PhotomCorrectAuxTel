@@ -37,5 +37,9 @@
 
 ## MLfit_gp_data	:
 - try to fit bouguer lines on Pic du Midi to recover instument transmission
+- extract throught and order1/order2
+
+## MLfit_atm2_data  : 
+- Machine learning : linear regression on the full spectrum at variable airmass at Pic du Midi
 
 
