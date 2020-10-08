@@ -95,9 +95,6 @@ from sklearn.metrics import mean_squared_error, r2_score,explained_variance_scor
 # Constants
 #################################################################
 
-# Range of wavelengths
-WLMINSEL=340.
-WLMAXSEL=1100.
 
 ################################################################
 # Functions
@@ -264,7 +261,7 @@ def plot_sed(t, ax):
 #------------------------------------------------------------------------------------------------------------------
 # Function to build the observed spectra
 #------------------------------------------------------------------------------------------------------------------
-def GetSpectra(sed, wl_atm, atm_transmission, order2=False,cut=False):
+def GetSpectraOld(sed, wl_atm, atm_transmission, order2=False,cut=False):
     """
 
     GetSpectra(sed, wl_atm, atm_transmission, order2=False) : compute a series of observed spectra from
@@ -345,6 +342,85 @@ def GetSpectra(sed, wl_atm, atm_transmission, order2=False,cut=False):
     spectra2 = spectra2 * 10
 
     return spectra, spectra2
+
+#-----------------------------------------------------------------------------------------------
+def GetSpectra(sed, wl_atm, atm_transmission, order2=False, cut=False,
+               file_throuput_effratio="pdm_extracted_throuput_and_o2o1ratio.csv"):
+    """
+
+    * input :
+     - sed : Pysynphot SED
+     -  wl  : wavelength of the atmospheric transmission (nm)
+     - transmission : atmospheric transmission array
+     - order2 : flag to compute the atmospheric transmission
+
+    * output :
+     - array of spectra (corresponding to wl in nm)
+
+    """
+
+    wl0 = sed.wave  # in angstrom
+    spectra = np.zeros_like(atm_transmission)
+    spectra2 = np.zeros_like(atm_transmission)  # order 2
+
+    wl_atm_ang = 10 * wl_atm
+
+    # quantum efficiency
+    df_thr = pd.read_csv(file_throuput_effratio, index_col=0)
+
+    wl_thr = df_thr["wl"].values
+    through = df_thr["throughput"].values
+    effratio = df_thr["effratio"].values
+
+    # convert wavelength into angstrom
+    bp_order1 = S.ArrayBandpass(wl_thr * 10, through, name='throughput_o1')
+    bp_order2 = S.ArrayBandpass(wl_thr * 10, through * effratio, name='throughput_o2')
+
+    # passband for atmosphere
+    Natm = atm_transmission.shape[0]
+    all_bp_atm = []
+    for i_atm in np.arange(Natm):
+        label_atm = "atm{:d}".format(i_atm)
+        bp_atm = S.ArrayBandpass(wl_atm_ang, atm_transmission[i_atm, :], name=label_atm)
+        all_bp_atm.append(bp_atm)
+
+    all_obs1 = []
+    all_obs2 = []
+
+    # compute spectra for order 1 and order 2
+    for i_atm in np.arange(Natm):
+        bp_all_order1 = all_bp_atm[i_atm] * bp_order1
+        bp_all_order2 = all_bp_atm[i_atm] * bp_order2
+
+        obs1 = S.Observation(sed, bp_all_order1, force='taper')  # order 1
+        obs2 = S.Observation(sed, bp_all_order2, force='taper')  # order 2
+
+        all_obs1.append(obs1)
+        all_obs2.append(obs2)
+
+    for i_atm in np.arange(Natm):
+        obs1 = all_obs1[i_atm]
+        func_order1 = interpolate.interp1d(obs1.binwave, obs1.binflux, bounds_error=False, fill_value=(0, 0))
+
+        spectra[i_atm, :] = func_order1(wl_atm_ang)
+
+        obs2 = all_obs2[i_atm]
+        func_order2 = interpolate.interp1d(2 * obs2.binwave, obs2.binflux / 2, bounds_error=False, fill_value=(0, 0))
+        spectra2[i_atm, :] = func_order2(wl_atm_ang)
+
+    if cut:
+        wlcut_indexes = np.where(wl_atm_ang < 7500)[0]
+        spectra2[:, wlcut_indexes] = 0
+
+    # add order 1 + order 2
+    if order2:
+        spectra = spectra + spectra2
+
+    spectra = spectra * 10  # to get per unit of nm
+    spectra2 = spectra2 * 10
+
+    return spectra, spectra2
+
 
 #------------------------------------------------------------------------------------------------------------------
 # Function to plot
@@ -936,6 +1012,16 @@ if __name__ == "__main__":
         FLAG_VERBOSE = bool(int(config['GENERAL']['FLAG_VERBOSE']))
         FLAG_PLOT = bool(int(config['GENERAL']['FLAG_PLOT']))
         FLAG_PRINT = bool(int(config['GENERAL']['FLAG_PRINT']))
+
+        # filename of throuput and order
+        throuputfile = config['GENERAL']['throuputfile']
+
+        object = config['GENERAL']['object']
+        sedfilename = config['GENERAL']['sedfilename']
+        WLMINSEL = float(config['GENERAL']['WLMINSEL'])
+        WLMAXSEL = float(config['GENERAL']['WLMAXSEL'])
+
+
     else:
         msg = f"Configuration file : empty section GENERAL in config file {config_filename} !"
         logger.error(msg)
@@ -1089,40 +1175,49 @@ if __name__ == "__main__":
 
     # SED
     #-----
-    t = GetListOfCalspec()
-    t_sel = SelectFewSED(t)
-
-    if FLAG_PLOT:
-        fig = plt.figure(figsize=(8, 4))
-        ax = fig.add_subplot(111)
-        plot_sed(t_sel, ax)
-        plt.show()
-
 
     # Retreive the SED
-    idx_sed_sel = 3
-    sed_filename = t_sel[idx_sed_sel]["FILES"]
-    sed_objname = t_sel[idx_sed_sel]["OBJNAME"]
+
+    s0 = S.FileSpectrum(os.path.join(path_sed_calspec, sedfilename))
+    s0.convert('flam')
+
+    sed_w = s0.wave / 10
+    sed_f = s0.flux * 10
+    sed_idx = np.where(np.logical_and(sed_w > 350, sed_w < 1100))[0]
+    sed_w = sed_w[sed_idx]
+    sed_f = sed_f[sed_idx]
+
+
+
+
+    if FLAG_PLOT:
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        ax.plot(sed_w * 10, sed_f / 10, "b-")
+        ax.set_xlabel(s0.waveunits.name)
+        ax.set_ylabel(s0.fluxunits.name)
+        title = f"SED : {object}"
+        ax.set_title(title)
+        ax.grid()
+
+
+
+
+    sed_filename = sedfilename
+    sed_objname = object
     sed_fullfilename = os.path.join(path_sed_calspec, sed_filename)
 
 
-    # case of flat
-    if sed_filename == "flat":
-        flatsp = S.FlatSpectrum(10, fluxunits='photlam')
-        spec = flatsp
-    else:
-        spec = S.FileSpectrum(sed_fullfilename)
-
-
-    # renormalisation and conversion to photlam
-    spec_norm = spec.renorm(10, 'vegamag', S.ObsBandpass('johnson,v'))
-    spec_norm.convert('photlam')
 
 
     #################
     order2 = True
     cut    = True
     ################
+
+    # Get the spectra
+
+    # define the spectra filename to be written or already written
     if order2 and not cut:
         specarrayfile = "spec_" + sed_objname + "_ord12.npy"
         specarrayfile2 = "spec2_" + sed_objname + "_ord2.npy"
@@ -1145,7 +1240,8 @@ if __name__ == "__main__":
 
     # Get Spectra unless already save in files
     if not os.path.isfile(specarrayfile) or not os.path.isfile(specarrayfile2):
-        spectra, spectra2 = GetSpectra(sed=spec_norm, wl_atm=wl, atm_transmission=transm, order2=order2,cut=cut)
+        spectra, spectra2 = GetSpectra(sed=s0, wl_atm=wl, atm_transmission=transm, order2=order2, cut=cut,
+                                       file_throuput_effratio=throuputfile)
         np.save(specarrayfile, spectra)
         np.save(specarrayfile2, spectra2)
     else:
