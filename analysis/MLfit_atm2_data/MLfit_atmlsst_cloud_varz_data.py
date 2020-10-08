@@ -4,7 +4,7 @@
 # - affiliation : IJCLab/IN2P3/CNRS
 # - creation date : September 17th 2020
 #
-# launch python MLfit_atmlsst_cloud_varz.py --config config/default.ini
+# launch python MLfit_atmlsst_cloud_varz_data.py --config config/default.ini
 #
 #############################################################################################################
 
@@ -72,6 +72,9 @@ import time
 from datetime import datetime,date
 import dateutil.parser
 import pytz
+
+# to save model parameters
+import pickle
 
 
 # for logging
@@ -1042,6 +1045,24 @@ if __name__ == "__main__":
         logger.error(msg)
         sys.exit()
 
+    if 'LINEARREGRESSION' in config_section:
+
+
+        FLAG_LINEARREGRESSION = bool(int(config["LINEARREGRESSION"]["FLAG_LINEARREGRESSION"]))
+        FLAG_LINEARREGRESSION_RIDGE = bool(int(config["LINEARREGRESSION"]["FLAG_LINEARREGRESSION_RIDGE"]))
+        FLAG_LINEARREGRESSION_LASSO = bool(int(config["LINEARREGRESSION"]["FLAG_LINEARREGRESSION_LASSO"]))
+
+        file_pickle_modellinearregression =  config["LINEARREGRESSION"]["file_pickle_modellinearregression"]
+        file_pickle_modellinearregression_ridge = config["LINEARREGRESSION"]["file_pickle_modellinearregression_ridge"]
+        file_pickle_modellinearregression_lasso = config["LINEARREGRESSION"]["file_pickle_modellinearregression_lasso"]
+    else:
+        msg = f"Configuration file : Missing section LINEARREGRESSION in config file {config_filename} !"
+        logger.error(msg)
+        sys.exit()
+
+
+
+
 
     # Atmospheric transparency file and selection
     #----------------------------------------------
@@ -1383,10 +1404,19 @@ if __name__ == "__main__":
         plt.show()
 
 
+    # save scaling parameters
+    # because true data will have to be scaled accordingly
+    np.save("my_standard_scaler_wl.npy", wl)
+    np.save("my_standard_scaler_xmean.npy", scaler_X.mean_)
+    np.save("my_standard_scaler_xscale.npy", scaler_X.scale_)
+    np.save("my_standard_scaler_ymean.npy", scaler_Y.mean_)
+    np.save("my_standard_scaler_yscale.npy", scaler_Y.scale_)
 
 
-    # LEARNING CURVE
 
+    ############################
+    # LEARNING CURVES
+    ############################
 
 
     nb_tot_test = len(Y_test)
@@ -1394,20 +1424,6 @@ if __name__ == "__main__":
 
     nsamples_test = np.arange(10, nb_tot_test, 100)
     nsamples_train = np.arange(10, nb_tot_train, 100)
-
-    if 'LINEARREGRESSION' in config_section:
-        FLAG_LINEARREGRESSION = bool(int(config['LINEARREGRESSION']['FLAG_LINEARREGRESSION']))
-        FLAG_LINEARREGRESSION_RIDGE = bool(int(config['LINEARREGRESSION']['FLAG_LINEARREGRESSION_RIDGE']))
-        FLAG_LINEARREGRESSION_LASSO = bool(int(config['LINEARREGRESSION']['FLAG_LINEARREGRESSION_LASSO']))
-    else:
-        msg = f"Configuration file : Missing section LINEARREGRESSION in config file {config_filename} !"
-        logger.error(msg)
-        sys.exit()
-
-
-
-
-
 
 
 
@@ -1419,8 +1435,6 @@ if __name__ == "__main__":
 
 
         logger.info('4) Linear Regression, no regularisation')
-
-
 
 
         all_MSE_train = np.zeros(len(nsamples_train))
@@ -1544,6 +1558,11 @@ if __name__ == "__main__":
             # Explained variance : 1 is perfect prediction
             msg='Explained variance: %.5f' % explained_variance_score(Y_test, Y_pred_test)
             logger.info(msg)
+
+
+        # save parameters
+        with open(file_pickle_modellinearregression, 'wb') as file:
+            pickle.dump(regr, file)
 
 
 
@@ -1770,6 +1789,11 @@ if __name__ == "__main__":
             # Explained variance : 1 is perfect prediction
             msg='Explained variance: %.5f' % explained_variance_score(Y_test, Y_pred_test)
             logger.info(msg)
+
+
+        # save final parameters
+        with open(file_pickle_modellinearregression_ridge, 'wb') as file:
+            pickle.dump(ridge, file)
 
 
         if FLAG_PLOT:
