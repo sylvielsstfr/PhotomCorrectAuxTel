@@ -38,6 +38,10 @@ plt.rcParams.update(params)
 from astropy.table import Table
 from scipy import interpolate
 
+# to save model parameters
+import pickle
+from joblib import dump
+
 # pysynphot
 import pysynphot as S
 pysynphot_root_path=os.environ['PYSYN_CDBS']
@@ -956,6 +960,22 @@ if __name__ == "__main__":
         logger.error(msg)
         sys.exit()
 
+    if 'LINEARREGRESSION' in config_section:
+
+        FLAG_LINEARREGRESSION = bool(int(config["LINEARREGRESSION"]["FLAG_LINEARREGRESSION"]))
+        FLAG_LINEARREGRESSION_RIDGE = bool(int(config["LINEARREGRESSION"]["FLAG_LINEARREGRESSION_RIDGE"]))
+        FLAG_LINEARREGRESSION_LASSO = bool(int(config["LINEARREGRESSION"]["FLAG_LINEARREGRESSION_LASSO"]))
+
+        file_pickle_modellinearregression = config["LINEARREGRESSION"]["file_pickle_modellinearregression"]
+        file_pickle_modellinearregression_ridge = config["LINEARREGRESSION"]["file_pickle_modellinearregression_ridge"]
+        file_pickle_modellinearregression_lasso = config["LINEARREGRESSION"]["file_pickle_modellinearregression_lasso"]
+    else:
+        msg = f"Configuration file : Missing section LINEARREGRESSION in config file {config_filename} !"
+        logger.error(msg)
+        sys.exit()
+
+
+
 
     # Atmospheric transparency file and selection
     #----------------------------------------------
@@ -1187,35 +1207,102 @@ if __name__ == "__main__":
     ##############################
     ##   X
     ##############################
-    X = -2.5 * np.log10(spectra * transm_cloud_arr) / airmassarr
+    FLAG_MAG = True
+    FLAG_X_DOUBLE = True
+    if FLAG_MAG:
+        X2 = -2.5 * np.log10(spectra * transm_cloud_arr) / airmassarr
+        X1 = -2.5 * np.log10(spectra * transm_cloud_arr)
+        if FLAG_X_DOUBLE:
+            X = np.concatenate((X1, X2), axis=1)
+        else:
+            X = X1
+    else:
+        X = spectra * transm_cloud_arr
 
-    if FLAG_PLOT:
-        N = 50
+    if FLAG_PLOT and not FLAG_X_DOUBLE:
+        N = 1000
         jet = plt.get_cmap('jet')
         cNorm = colors.Normalize(vmin=0, vmax=N)
         scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
         all_colors = scalarMap.to_rgba(np.arange(N), alpha=1)
 
-        fig = plt.figure(figsize=(10, 4))
-        ax = fig.add_subplot(111)
+        fig = plt.figure(figsize=(18, 4))
+        ax = fig.add_subplot(121)
         for idx in np.arange(N):
             ax.plot(wl, X[idx, :], color=all_colors[idx])
         ax.set_xlabel("$\lambda$ (nm)")
-        ax.set_ylabel("mag")
-        ax.set_title("Observed spectra with cloud")
+        ax.set_ylabel("X (mag)")
         ax.grid()
-        ax1 = ax.twinx()
-        ax1.set_ylim(ax.get_ylim())
-        plt.tight_layout()
+        ax.set_title("Magnitude of Spectra")
+        ax.set_ylim(0, 5)
+
+        ax = fig.add_subplot(122)
+        for idx in np.arange(N):
+            ax.scatter(airmass[idx], np.average(X[idx, :]), marker="+", facecolor=all_colors[idx])
+
+        ax.set_xlabel("airmass")
+        ax.set_ylabel("average X (mag)")
+        ax.grid()
+        ax.set_title("Magnitude of Spectra")
+        ax.set_ylim(0, 5)
         plt.show()
 
+    if FLAG_PLOT and FLAG_X_DOUBLE:
+        N = 1000
+        jet = plt.get_cmap('jet')
+        cNorm = colors.Normalize(vmin=0, vmax=N)
+        scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+        all_colors = scalarMap.to_rgba(np.arange(N), alpha=1)
+
+        fig = plt.figure(figsize=(18, 8))
+
+        ax = fig.add_subplot(221)
+        for idx in np.arange(N):
+            ax.plot(wl, X1[idx, :], color=all_colors[idx])
+        ax.set_xlabel("$\lambda$ (nm)")
+        ax.set_ylabel("X1 (mag)")
+        ax.grid()
+        ax.set_title("Magnitude of Spectra M")
+        ax.set_ylim(0, 5)
+
+        ax = fig.add_subplot(222)
+        for idx in np.arange(N):
+            ax.scatter(airmass[idx], np.average(X1[idx, :]), marker="+", facecolor=all_colors[idx])
+
+        ax.set_xlabel("airmass")
+        ax.set_ylabel("average X1 (mag)")
+        ax.grid()
+        ax.set_title("Magnitude of Spectra <M>")
+        ax.set_ylim(0, 5)
+
+        ax = fig.add_subplot(223)
+        for idx in np.arange(N):
+            ax.plot(wl, X2[idx, :], color=all_colors[idx])
+        ax.set_xlabel("$\lambda$ (nm)")
+        ax.set_ylabel("X2 (mag)")
+        ax.grid()
+        ax.set_title("Magnitude of Spectra <M/z>")
+        ax.set_ylim(0, 5)
+
+        ax = fig.add_subplot(224)
+        for idx in np.arange(N):
+            ax.scatter(airmass[idx], np.average(X2[idx, :]), marker="+", facecolor=all_colors[idx])
+
+        ax.set_xlabel("airmass")
+        ax.set_ylabel("average X2 (mag)")
+        ax.grid()
+        ax.set_title("Magnitude of Spectra M/z")
+        ax.set_ylim(0, 5)
+
+        plt.tight_layout()
+        plt.show()
 
     ##################################################################################################################
     #  Correlation coefficient
     ############################################################################################################
-    if FLAG_PLOT:
+    if FLAG_PLOT and not FLAG_X_DOUBLE:
 
-        fig = plt.figure(figsize=(12, 6))
+        fig = plt.figure(figsize=(12, 5))
         ax = fig.add_subplot(111)
 
         Ny = Y.shape[1]
@@ -1237,15 +1324,79 @@ if __name__ == "__main__":
                 R = np.corrcoef(x=x, y=y, rowvar=False)
                 corr[iy, ix] = R[0, 1]
 
-            ax.plot(wl, corr[iy, :], color=all_colors[iy], label=Ylabel[iy])
+            ax.plot(wl, corr[iy, :], color=all_colors[iy], label=Ylabel[iy], lw=4)
 
         ax.legend()
         ax.set_xlabel("$\lambda$  (nm)")
         ax.set_ylabel("Correlation")
         ax.set_title("ML : Correlation coefficient Y - X")
         ax.grid()
-        ax.set_ylim(0,1.)
+        ax.set_ylim(0, 1)
         plt.show()
+
+    if FLAG_PLOT and FLAG_X_DOUBLE:
+
+        fig = plt.figure(figsize=(18, 5))
+
+        ax = fig.add_subplot(121)
+
+        Ny = Y.shape[1]
+        Nx = X1.shape[1]
+
+        N = Ny
+        jet = plt.get_cmap('jet')
+        cNorm = colors.Normalize(vmin=0, vmax=N)
+        scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+        all_colors = scalarMap.to_rgba(np.arange(N), alpha=1)
+
+        corr = np.zeros((Ny, Nx))
+
+        for iy in np.arange(Ny):
+            y = Y[:, iy]
+
+            for ix in np.arange(Nx):
+                x = X1[:, ix]
+                R = np.corrcoef(x=x, y=y, rowvar=False)
+                corr[iy, ix] = R[0, 1]
+
+            ax.plot(wl, corr[iy, :], color=all_colors[iy], label=Ylabel[iy], lw=4)
+
+        ax.legend()
+        ax.set_xlabel("$\lambda$  (nm)")
+        ax.set_ylabel("Correlation")
+        ax.set_title("ML : Correlation coefficient Y - X1")
+        ax.grid()
+        ax.set_ylim(0, 1)
+
+        ax = fig.add_subplot(122)
+
+        Ny = Y.shape[1]
+        Nx = X2.shape[1]
+
+        N = Ny
+        jet = plt.get_cmap('jet')
+        cNorm = colors.Normalize(vmin=0, vmax=N)
+        scalarMap = cmx.ScalarMappable(norm=cNorm, cmap=jet)
+        all_colors = scalarMap.to_rgba(np.arange(N), alpha=1)
+
+        corr = np.zeros((Ny, Nx))
+
+        for iy in np.arange(Ny):
+            y = Y[:, iy]
+
+            for ix in np.arange(Nx):
+                x = X2[:, ix]
+                R = np.corrcoef(x=x, y=y, rowvar=False)
+                corr[iy, ix] = R[0, 1]
+
+            ax.plot(wl, corr[iy, :], color=all_colors[iy], label=Ylabel[iy], lw=4)
+
+        ax.legend()
+        ax.set_xlabel("$\lambda$  (nm)")
+        ax.set_ylabel("Correlation")
+        ax.set_title("ML : Correlation coefficient Y - X2")
+        ax.grid()
+        ax.set_ylim(0, 1)
 
 
 
@@ -1287,10 +1438,23 @@ if __name__ == "__main__":
         plt.show()
 
 
+    # save scaler data
+    np.save("my_standard_scaler_wl.npy", wl)
+    np.save("my_standard_scaler_xmean.npy", scaler_X.mean_)
+    np.save("my_standard_scaler_xscale.npy", scaler_X.scale_)
+    np.save("my_standard_scaler_xvar.npy", scaler_X.var_)
+    np.save("my_standard_scaler_ymean.npy", scaler_Y.mean_)
+    np.save("my_standard_scaler_yscale.npy", scaler_Y.scale_)
+    np.save("my_standard_scaler_yvar.npy", scaler_Y.var_)
 
+    # https://stackoverflow.com/questions/35944783/how-to-store-scaling-parameters-for-later-use
 
+    dump(scaler_X, 'scaler_X.joblib')
+    dump(scaler_Y, 'scaler_Y.joblib')
+
+    ###################################################################################################################
     # LEARNING CURVE
-
+    ####################################################################################################################
 
 
     nb_tot_test = len(Y_test)
@@ -1298,17 +1462,6 @@ if __name__ == "__main__":
 
     nsamples_test = np.arange(10, nb_tot_test, 100)
     nsamples_train = np.arange(10, nb_tot_train, 100)
-
-    if 'LINEARREGRESSION' in config_section:
-        FLAG_LINEARREGRESSION = bool(int(config['LINEARREGRESSION']['FLAG_LINEARREGRESSION']))
-        FLAG_LINEARREGRESSION_RIDGE = bool(int(config['LINEARREGRESSION']['FLAG_LINEARREGRESSION_RIDGE']))
-        FLAG_LINEARREGRESSION_LASSO = bool(int(config['LINEARREGRESSION']['FLAG_LINEARREGRESSION_LASSO']))
-    else:
-        msg = f"Configuration file : Missing section LINEARREGRESSION in config file {config_filename} !"
-        logger.error(msg)
-        sys.exit()
-
-
 
 
 
@@ -1321,10 +1474,7 @@ if __name__ == "__main__":
 
     if FLAG_LINEARREGRESSION:
 
-
         logger.info('4) Linear Regression, no regularisation')
-
-
 
 
         all_MSE_train = np.zeros(len(nsamples_train))
@@ -1448,6 +1598,13 @@ if __name__ == "__main__":
             # Explained variance : 1 is perfect prediction
             msg='Explained variance: %.5f' % explained_variance_score(Y_test, Y_pred_test)
             logger.info(msg)
+
+
+
+        # save coefficients
+        #--------------------
+        with open(file_pickle_modellinearregression, 'wb') as file:
+            pickle.dump(regr, file)
 
 
 
@@ -1674,6 +1831,10 @@ if __name__ == "__main__":
             # Explained variance : 1 is perfect prediction
             msg='Explained variance: %.5f' % explained_variance_score(Y_test, Y_pred_test)
             logger.info(msg)
+
+        # save coefficients
+        with open(file_pickle_modellinearregression_ridge, 'wb') as file:
+            pickle.dump(ridge, file)
 
 
         if FLAG_PLOT:
