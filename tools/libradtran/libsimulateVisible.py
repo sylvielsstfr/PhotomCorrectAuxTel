@@ -35,7 +35,7 @@ print("libradtranpath=",libradtranpath)
 #          : Prog_Obs_Rte_Atm_proc_Mod_zXX_wv_XX_oz_XX
   
 Prog='RT'  #definition the simulation programm is libRadTran
-Obs='MPL'   # definition of observatory site (LS,CT,OH,MK,...)
+Obs='LS'   # definition of observatory site (LS,CT,OH,MK,...)
 Rte='pp'   # pp for parallel plane of ps for pseudo-spherical
 Atm=['us']   # short name of atmospheric sky here US standard and  Subarctic winter
 Proc='sa'  # light interaction processes : sc for pure scattering,ab for pure absorption
