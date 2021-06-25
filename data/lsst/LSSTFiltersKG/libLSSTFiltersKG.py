@@ -77,8 +77,7 @@ def PlotFiltersTransmissions(wl_u,u,wl_g,g,wl_r,r,wl_i,i,wl_z,z,wl_y4,y4):
 
 #--------------------------------------------------------------------------
 def GetThroughputAndCCDQE(path):
-    data_throuthput=pd.read_excel(os.path.join(path,file_lsstoptccd),skiprow=1)
-    
+    data_throuthput=pd.read_excel(os.path.join(path,file_lsstoptccd),skiprows=0,sheet_name=0)
     wl=np.array(data_throuthput["WL"])
     throughput=np.array(data_throuthput["THROUGHPUT"])
     ccdqe=np.array(data_throuthput["CCD2"])
