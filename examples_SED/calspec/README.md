@@ -3,6 +3,8 @@
 - author : Sylvie Dagoret-Campagne
 - affiliation : IJCLab/IN2P3/CNRS
 - creation date : April 2020
+- last verification : December 14th 2021 --> OK (corrections for python 3.9)
+
 
 ## Purpose
 
@@ -15,7 +17,7 @@
 
 ### 1bis_MakeHDCalspecList.ipynb	
 
-- read all HD type calspec in their pytynphot directory and produce an astropy table. 
+- read all HD type calspec in their pysynphot directory and produce an astropy table. 
 
 ### 2_ViewCalspecSpectra.ipynb	
 
@@ -33,8 +35,7 @@ This is very important to see how observable spectrum is obtained by multiplicat
 hologram, CCD eff, **including second order transmission**.
 
 
-
 ### 5_SelectFiewColors.ipynb
-- Select a fiew CALSPEC with various colors for color studies.
+- Select a fiew CALSPEC with various colors from color studies in **3\_ViewCalspecColors.ipynb**.
 
 
