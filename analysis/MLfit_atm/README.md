@@ -3,7 +3,12 @@
 - author Sylvie Dagoret-Campagne
 - creation date August 2020
 
+
+Last verification : December 14th 2021
+
 Does Machine Learning on either transmission, spectrum,... 
+
+
 
 ## Linear fit
 
